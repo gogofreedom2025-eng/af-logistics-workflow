@@ -1,0 +1,440 @@
+import type {
+  AirliftPacket,
+  BellyNarrowRow,
+  BellyWideRow,
+  Block11Marks,
+  DangerousCargo,
+  DangerousCargoCert,
+  DangerousCargoRow,
+  LoadSequenceRow,
+} from "../types/loadPlan";
+import { newId, todayYYYYMMDD } from "../utils/format";
+
+export function isoToday(): string {
+  const compact = todayYYYYMMDD();
+  return `${compact.slice(0, 4)}-${compact.slice(4, 6)}-${compact.slice(6, 8)}`;
+}
+
+export function emptyMarks(): Block11Marks {
+  return { a: "", b: "", c: "", d: "", e: "", f: "" };
+}
+
+export function emptyRow(): LoadSequenceRow {
+  return {
+    id: newId("row"),
+    sequence: 1,
+    equipment: "",
+    station: "",
+    identification: "",
+    destination: "",
+    location: "",
+    pieces: 1,
+    grossWeight: 0,
+    moment: 0,
+    position: "",
+    overhang: "",
+    contents: "",
+    specialHandling: false,
+    specialService: "",
+    hazmat: false,
+    unNumber: "",
+    shippingName: "",
+    hazardClass: "",
+    vehicle: false,
+    onDash9: false,
+    attlaReference: "",
+  };
+}
+
+export function emptyBellyWide(): BellyWideRow {
+  return {
+    id: newId("belly"),
+    position: "",
+    identification: "",
+    destination: "",
+    location: "",
+    grossWeight: 0,
+    moment: 0,
+    specialHandling: false,
+  };
+}
+
+export function emptyBellyNarrow(): BellyNarrowRow {
+  return {
+    id: newId("narrow"),
+    location: "",
+    destination: "",
+    weight: 0,
+    cube: 0,
+    specialHandling: false,
+  };
+}
+
+const emptyCert = (): DangerousCargoCert => ({
+  name: "",
+  title: "",
+  signature: "",
+  date: "",
+  remarks: "",
+});
+
+export function emptyDangerousCargoRow(): DangerousCargoRow {
+  return {
+    id: newId("haz"),
+    tcn: "",
+    stowLocation: "",
+    shippingName: "",
+    hazardClass: "",
+    unNumber: "",
+    packingGroup: "",
+    typePack: "",
+    pieces: "",
+    weight: "",
+    cube: "",
+    netExplosiveWeight: "",
+    remarks: "",
+  };
+}
+
+export function sampleDangerousCargo(): DangerousCargo {
+  return {
+    agencyName: "621 CRW",
+    agencyAddress: "436th Airlift Wing\nDover AFB\nDover, DE 19902",
+    vesselName: "C-17A",
+    vesselNumber: "08-8190",
+    registry: "USAF",
+    ircs: "RCH7547",
+    voyageNumber: "PVRA7547",
+    vanNumber: "PLT-4402",
+    totalNetExplosiveWeight: "0",
+    portOfEntry: "KDOV",
+    portOfDestination: "ETAR",
+    prepared49Cfr: true,
+    preparedImdg: false,
+    rows: [
+      {
+        id: "haz-plt-4402",
+        tcn: "FB6214402X0001XXX",
+        stowLocation: "2",
+        shippingName: "Paint",
+        hazardClass: "3",
+        unNumber: "UN1263",
+        packingGroup: "III",
+        typePack: "Can",
+        pieces: "12",
+        weight: "816",
+        cube: "2.4",
+        netExplosiveWeight: "0",
+        remarks: "Flash point 28 C. Pallet PLT-4402, 1,800 lb.",
+      },
+    ],
+    declaration: {
+      name: "Nguyen, A.",
+      title: "SSgt",
+      signature: "A. Nguyen",
+      date: "2026-11-13",
+      remarks: "",
+    },
+    unitKind: "463L pallet",
+    packed: {
+      name: "Nguyen, A.",
+      title: "SSgt",
+      signature: "A. Nguyen",
+      date: "2026-11-13",
+      remarks: "12 cans secured on pallet PLT-4402.",
+    },
+  };
+}
+
+function dangerousCargoIsBlank(cargo: DangerousCargo | undefined): boolean {
+  if (!cargo) return true;
+  const text = [
+    cargo.agencyName,
+    cargo.agencyAddress,
+    cargo.vesselName,
+    cargo.vesselNumber,
+    cargo.registry,
+    cargo.ircs,
+    cargo.voyageNumber,
+    cargo.vanNumber,
+    cargo.totalNetExplosiveWeight,
+    cargo.portOfEntry,
+    cargo.portOfDestination,
+    cargo.unitKind,
+    cargo.declaration?.name,
+    cargo.packed?.name,
+    ... (cargo.rows ?? []).flatMap((row) => [row.tcn, row.shippingName, row.unNumber, row.remarks]),
+  ];
+  return text.every((value) => !value?.trim()) && !cargo.prepared49Cfr && !cargo.preparedImdg;
+}
+
+export function withSampleDangerousCargo(plan: AirliftPacket): AirliftPacket {
+  if (plan.id !== "lp-c17-sample" || !dangerousCargoIsBlank(plan.dangerousCargo)) return plan;
+  return { ...plan, dangerousCargo: sampleDangerousCargo() };
+}
+
+export function emptyDangerousCargo(): DangerousCargo {
+  return {
+    agencyName: "",
+    agencyAddress: "",
+    vesselName: "",
+    vesselNumber: "",
+    registry: "",
+    ircs: "",
+    voyageNumber: "",
+    vanNumber: "",
+    totalNetExplosiveWeight: "",
+    portOfEntry: "",
+    portOfDestination: "",
+    prepared49Cfr: false,
+    preparedImdg: false,
+    rows: [emptyDangerousCargoRow()],
+    declaration: emptyCert(),
+    unitKind: "",
+    packed: emptyCert(),
+  };
+}
+
+export function withDangerousCargo(value: DangerousCargo | undefined): DangerousCargo {
+  const base = emptyDangerousCargo();
+  if (!value) return base;
+  const stored = value as DangerousCargo & { page?: string; pages?: string };
+  const { page: _page, pages: _pages, ...rest } = stored;
+  return {
+    ...base,
+    ...rest,
+    prepared49Cfr: value.prepared49Cfr ?? false,
+    preparedImdg: value.preparedImdg ?? false,
+    unitKind: value.unitKind ?? "",
+    rows: value.rows?.length ? value.rows : base.rows,
+    declaration: { ...emptyCert(), ...value.declaration },
+    packed: { ...emptyCert(), ...value.packed },
+  };
+}
+
+export function cargoWeight(plan: AirliftPacket): number {
+  return (plan.rows ?? []).reduce((sum, row) => sum + (Number(row.grossWeight) || 0), 0);
+}
+
+export function createBlankLoadPlan(): AirliftPacket {
+  const today = isoToday();
+  return {
+    id: newId("lp"),
+    status: "draft",
+    aircraftType: "",
+    missionNumber: "",
+    missionRouting: "",
+    fromStation: "",
+    toStation: "",
+    aclOffered: "",
+    positionsAvailable: "",
+    positionsUsed: "",
+    departureDate: today,
+    departureTime: "",
+    configuration: "",
+    looseCargoMail: "",
+    operatingWeight: 0,
+    operatingMoment: 0,
+    cargoMailWeight: 0,
+    cargoMailMoment: 0,
+    zeroFuelWeight: 0,
+    zeroFuelMoment: 0,
+    percentMac: "",
+    centerOfBalanceStation: "",
+    plannedBy: "",
+    plannedDate: today,
+    phaseIIQualified: "",
+    loadedBy: "",
+    loadedDate: "",
+    timeLoadPlanComplete: "",
+    timeReceivedByInfoControl: "",
+    startAircraftUpload: "",
+    completeAircraftUpload: "",
+    scaleName: "",
+    scaleGrade: "",
+    scaleDate: "",
+    specialCertifiedBy: "",
+    sddgCertifiedBy: "",
+    sddgDate: "",
+    deployingUnit: "",
+    chalk: "",
+    mobilityForce: "",
+    inspectionDate: today,
+    deployingRepName: "",
+    inspectorName: "",
+    block11: emptyMarks(),
+    rows: [emptyRow()],
+    bellyWide: [emptyBellyWide()],
+    bellyNarrow: [emptyBellyNarrow()],
+    dangerousCargo: emptyDangerousCargo(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export function createSeedLoadPlans(): AirliftPacket[] {
+  const row = (
+    partial: Pick<LoadSequenceRow, "equipment" | "identification" | "destination" | "grossWeight" | "position"> &
+      Partial<LoadSequenceRow>,
+  ): LoadSequenceRow => ({
+    ...emptyRow(),
+    id: partial.identification.toLowerCase(),
+    ...partial,
+  });
+
+  return [
+    {
+      ...createBlankLoadPlan(),
+      id: "lp-c17-sample",
+      aircraftType: "C-17A 08-8190",
+      missionNumber: "PVRA7547",
+      missionRouting: "KDOV-ETAR",
+      fromStation: "KDOV",
+      toStation: "ETAR",
+      aclOffered: "90000",
+      positionsAvailable: "18",
+      positionsUsed: "3",
+      departureTime: "18:40",
+      configuration: "Cargo",
+      looseCargoMail: "None",
+      operatingWeight: 282000,
+      plannedBy: "SSgt A. Nguyen",
+      loadedBy: "",
+      deployingUnit: "621 CRW",
+      chalk: "1",
+      dangerousCargo: sampleDangerousCargo(),
+      rows: [
+        row({
+          equipment: "463L pallet",
+          identification: "PLT-4401",
+          destination: "ETAR",
+          pieces: 1,
+          grossWeight: 4200,
+          moment: 2100000,
+          position: "1",
+          contents: "4 crates, tool kits",
+        }),
+        row({
+          equipment: "463L pallet",
+          identification: "PLT-4402",
+          destination: "ETAR",
+          pieces: 1,
+          grossWeight: 1800,
+          moment: 1080000,
+          position: "2",
+          contents: "Paint, 12 cans",
+          hazmat: true,
+          unNumber: "UN1263",
+          shippingName: "Paint",
+          hazardClass: "3",
+        }),
+        row({
+          equipment: "M1151 HMMWV",
+          identification: "A-12",
+          destination: "ETAR",
+          pieces: 1,
+          grossWeight: 7800,
+          moment: 5460000,
+          position: "6",
+          contents: "Vehicle, basic issue items secured",
+          vehicle: true,
+          onDash9: false,
+        }),
+      ],
+      updatedAt: "2026-11-13T12:00:00.000Z",
+    },
+  ];
+}
+
+export function withLoadPlan(plan: AirliftPacket): AirliftPacket {
+  return {
+    ...plan,
+    bellyWide: plan.bellyWide ?? [],
+    bellyNarrow: plan.bellyNarrow ?? [],
+    dangerousCargo: withDangerousCargo(plan.dangerousCargo),
+    operatingMoment: plan.operatingMoment ?? 0,
+    cargoMailWeight: plan.cargoMailWeight ?? 0,
+    cargoMailMoment: plan.cargoMailMoment ?? 0,
+    zeroFuelWeight: plan.zeroFuelWeight ?? 0,
+    zeroFuelMoment: plan.zeroFuelMoment ?? 0,
+    centerOfBalanceStation: plan.centerOfBalanceStation ?? "",
+    phaseIIQualified: plan.phaseIIQualified ?? "",
+    timeLoadPlanComplete: plan.timeLoadPlanComplete ?? "",
+    timeReceivedByInfoControl: plan.timeReceivedByInfoControl ?? "",
+    startAircraftUpload: plan.startAircraftUpload ?? "",
+    completeAircraftUpload: plan.completeAircraftUpload ?? "",
+    updatedAt: new Date().toISOString(),
+    rows: (plan.rows ?? []).map((row, index) => ({ ...row, sequence: index + 1 })),
+  };
+}
+
+export interface BlockReadiness {
+  id: keyof Block11Marks;
+  title: string;
+  ready: boolean;
+  detail: string;
+}
+
+export function blockReadiness(plan: AirliftPacket): BlockReadiness[] {
+  const hazmat = plan.rows.filter((row) => row.hazmat);
+  const special = plan.rows.filter((row) => row.specialHandling);
+  const vehicles = plan.rows.filter((row) => row.vehicle);
+  const weighed = plan.rows.some((row) => row.identification.trim() && row.grossWeight > 0);
+
+  return [
+    {
+      id: "a",
+      title: "11a Pre-load plan",
+      ready: Boolean(plan.aircraftType.trim() && plan.missionNumber.trim() && weighed),
+      detail: "Aircraft, mission, and at least one weighed item on AF Form 4080.",
+    },
+    {
+      id: "b",
+      title: "11b Manifest, load list, packing list",
+      ready: Boolean(plan.fromStation.trim() && plan.toStation.trim() && weighed),
+      detail: "From and to stations, plus the items carried onto DD Form 1385 and DD Form 1750.",
+    },
+    {
+      id: "c",
+      title: "11c Shipper's declaration",
+      ready:
+        hazmat.length === 0 ||
+        (Boolean(plan.sddgCertifiedBy.trim()) &&
+          hazmat.every((row) => row.unNumber.trim() && row.shippingName.trim())),
+      detail:
+        hazmat.length === 0
+          ? "No hazardous cargo on this load. Mark not applicable."
+          : "UN number, proper shipping name, and a certifier on the shipper's declaration.",
+    },
+    {
+      id: "d",
+      title: "11d DD Form 1387-2",
+      ready:
+        special.length === 0 ||
+        (Boolean(plan.specialCertifiedBy.trim()) && special.every((row) => row.specialService.trim())),
+      detail:
+        special.length === 0
+          ? "No signature service or other special service. Mark not applicable."
+          : "A service type on each special item, and a certifier.",
+    },
+    {
+      id: "e",
+      title: "11e Military shipping label",
+      ready: Boolean(
+        plan.fromStation.trim() &&
+          plan.toStation.trim() &&
+          plan.rows.length > 0 &&
+          plan.rows.every((row) => row.identification.trim()),
+      ),
+      detail: "From, to, and an identifier on every piece so DD Form 1387 can be printed.",
+    },
+    {
+      id: "f",
+      title: "11f ATTLA certification",
+      ready: vehicles.length === 0 || vehicles.every((row) => row.onDash9 || row.attlaReference.trim()),
+      detail:
+        vehicles.length === 0
+          ? "No vehicles or equipment flagged. Mark not applicable."
+          : "Each vehicle is either on the Dash 9 or has an ATTLA letter reference.",
+    },
+  ];
+}
