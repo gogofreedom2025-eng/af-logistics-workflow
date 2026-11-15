@@ -5,9 +5,11 @@ import App from "./App.tsx";
 import { StoreProvider } from "./store/Store.tsx";
 import "./styles/theme.css";
 
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={base}>
       <StoreProvider>
         <App />
       </StoreProvider>
