@@ -53,12 +53,13 @@ export function AppHeader() {
           <div className="header-menu" ref={menuRef}>
             <button
               type="button"
-              className="usa-button usa-button--outline header-menu-button"
+              className={`usa-button usa-button--outline header-menu-button${open ? " is-open" : ""}`}
               aria-expanded={open}
               aria-haspopup="menu"
               onClick={() => setOpen((value) => !value)}
             >
               Menu
+              <span className="header-menu-caret" aria-hidden="true" />
             </button>
             {open ? (
               <ul className="header-menu-list" role="menu">
@@ -74,7 +75,7 @@ export function AppHeader() {
                 </li>
                 {MENU_ITEMS.map((item) => (
                   <li key={item.id} role="none">
-                    <button type="button" role="menuitem" onClick={() => void item.onSelect()}>
+                    <button type="button" role="menuitem" className="header-menu-danger" onClick={() => void item.onSelect()}>
                       {item.label}
                     </button>
                   </li>

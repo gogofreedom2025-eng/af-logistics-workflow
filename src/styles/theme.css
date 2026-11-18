@@ -102,31 +102,62 @@ body,
 }
 
 .site-header .header-menu-button.usa-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
   margin: 0;
+  padding: 0.5rem 0.95rem;
   border-radius: 0.6rem;
+  letter-spacing: 0.06em;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.site-header .header-menu-button.usa-button:hover,
+.site-header .header-menu-button.usa-button:focus,
+.site-header .header-menu-button.usa-button.is-open {
+  color: #fff;
+  background: rgba(56, 182, 255, 0.18);
+  box-shadow: inset 0 0 0 2px #7fd4ff;
+}
+
+.header-menu-caret {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-0.12rem) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.header-menu-button.is-open .header-menu-caret {
+  transform: translateY(0.12rem) rotate(225deg);
 }
 
 .header-menu-list {
   position: absolute;
-  top: calc(100% + 0.45rem);
+  top: calc(100% + 0.55rem);
   right: 0;
   z-index: 20;
-  min-width: 15rem;
+  min-width: 16rem;
   margin: 0;
-  padding: 0.45rem;
+  padding: 0.55rem;
   list-style: none;
-  background: #fff;
-  border: 1px solid #dfe1e2;
-  border-radius: 0.85rem;
+  background:
+    linear-gradient(#38b6ff, #38b6ff) top / 100% 3px no-repeat,
+    #fff;
+  border: 1px solid rgba(1, 13, 39, 0.14);
+  border-radius: 0.9rem;
   overflow: hidden;
-  box-shadow: 0 10px 28px rgba(1, 13, 39, 0.18);
+  box-shadow: 0 18px 40px rgba(1, 13, 39, 0.28);
 }
 
 .header-menu-list button,
 .header-menu-list a {
   display: block;
   width: 100%;
-  padding: 0.7rem 0.85rem;
+  padding: 0.75rem 0.9rem;
   border: 0;
   border-radius: 0.55rem;
   background: transparent;
@@ -135,6 +166,7 @@ body,
   text-align: left;
   text-decoration: none;
   cursor: pointer;
+  box-shadow: inset 3px 0 0 transparent;
 }
 
 .header-menu-list button:hover,
@@ -142,8 +174,20 @@ body,
 .header-menu-list a:hover,
 .header-menu-list a:focus,
 .header-menu-list a.active {
-  background: #eef3f8;
+  background: #eef6fc;
   color: var(--af-blue);
+  box-shadow: inset 3px 0 0 #38b6ff;
+}
+
+.header-menu-list .header-menu-danger {
+  color: #8d1d1d;
+}
+
+.header-menu-list .header-menu-danger:hover,
+.header-menu-list .header-menu-danger:focus {
+  background: #fdf2f2;
+  color: #8d1d1d;
+  box-shadow: inset 3px 0 0 #c73e3e;
 }
 
 .saved-record {
