@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import compassLogo from "../assets/compass_logo.jpg";
 import { clearDatabase } from "../store/db";
 
 const MENU_ITEMS = [
@@ -23,8 +24,15 @@ export function AppHeader() {
     const onPointerDown = (event: PointerEvent) => {
       if (!menuRef.current?.contains(event.target as Node)) setOpen(false);
     };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
     document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, [open]);
 
   return (
@@ -33,9 +41,12 @@ export function AppHeader() {
         <div className="usa-navbar" style={{ display: "flex", width: "100%", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
           <div className="usa-logo" id="logo">
             <em className="usa-logo__text">
-              <Link to="/" title="Home">
-                <span className="eyebrow">Department of the Air Force</span>
-                Logistics Workflow Enhancement
+              <Link to="/" title="Capacity Optimization, Mobility Planning & Allocation Support System">
+                <img
+                  className="site-logo-img"
+                  src={compassLogo}
+                  alt="COMPASS, Capacity Optimization, Mobility Planning & Allocation Support System"
+                />
               </Link>
             </em>
           </div>
@@ -51,6 +62,16 @@ export function AppHeader() {
             </button>
             {open ? (
               <ul className="header-menu-list" role="menu">
+                <li role="none">
+                  <NavLink role="menuitem" to="/form-catalog" onClick={() => setOpen(false)}>
+                    Form catalog
+                  </NavLink>
+                </li>
+                <li role="none">
+                  <NavLink role="menuitem" to="/saved-data" onClick={() => setOpen(false)}>
+                    Saved data
+                  </NavLink>
+                </li>
                 {MENU_ITEMS.map((item) => (
                   <li key={item.id} role="none">
                     <button type="button" role="menuitem" onClick={() => void item.onSelect()}>

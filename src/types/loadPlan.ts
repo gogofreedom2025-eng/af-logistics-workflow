@@ -1,6 +1,6 @@
 export type LoadPlanStatus = "draft" | "inspected";
 
-export type InspectionMark = "" | "sat" | "unsat" | "na";
+export type InspectionMark = "" | "sat" | "unsat" | "corrected" | "na";
 
 export interface Block11Marks {
   a: InspectionMark;
@@ -55,6 +55,28 @@ export interface DangerousCargoCert {
   remarks: string;
 }
 
+export interface InspectionColumn {
+  id: string;
+  identity: string;
+  marks: Record<string, InspectionMark>;
+}
+
+export interface JointInspection {
+  deployingForce: string;
+  departureAirfield: string;
+  date: string;
+  aircraftAndMission: string;
+  loadChalk: string;
+  startTime: string;
+  completeTime: string;
+  mobilityForce: string;
+  chapter3: "" | "yes" | "no";
+  columns: InspectionColumn[];
+  deployingRep: string;
+  mobilityInspector: string;
+  additionalInformation: string;
+}
+
 export interface DangerousCargo {
   agencyName: string;
   agencyAddress: string;
@@ -98,6 +120,28 @@ export interface LoadSequenceRow {
   vehicle: boolean;
   onDash9: boolean;
   attlaReference: string;
+}
+
+export interface PackingListRow {
+  id: string;
+  boxNo: string;
+  contents: string;
+  unitOfIssue: string;
+  initial: string;
+  spares: string;
+  total: string;
+}
+
+export interface PackingList {
+  packedBy: string;
+  boxCount: string;
+  requisitionNo: string;
+  orderNo: string;
+  endItem: string;
+  date: string;
+  rows: PackingListRow[];
+  typedName: string;
+  signature: string;
 }
 
 export interface AirliftPacket {
@@ -149,6 +193,8 @@ export interface AirliftPacket {
   bellyWide: BellyWideRow[];
   bellyNarrow: BellyNarrowRow[];
   dangerousCargo: DangerousCargo;
+  inspection: JointInspection;
+  packingList: PackingList;
   updatedAt: string;
 }
 
@@ -156,16 +202,18 @@ export interface PacketStep {
   slug: string;
   title: string;
   short: string;
+  hidden?: boolean;
+  built?: boolean;
 }
 
 export const PACKET_STEPS: PacketStep[] = [
-  { slug: "", title: "AF Form 4080", short: "Load plan" },
+  { slug: "", title: "AF Form 4080", short: "Load plan", built: true },
   { slug: "cargo-manifests", title: "DD Form 1385", short: "Cargo Manifests" },
-  { slug: "dangerous-cargo-load-list", title: "DD Form 2776", short: "Dangerous Cargo Load List" },
-  { slug: "packing-list", title: "DD Form 1750", short: "Packing List" },
-  { slug: "military-shipment-label", title: "DD Form 1387", short: "Military Shipment Label" },
-  { slug: "special-services-label", title: "DD Form 1387-2", short: "Special Services Label" },
-  { slug: "inspection-checklist", title: "DD Form 2133", short: "Inspection Checklist" },
+  { slug: "joint-airlift-inspection", title: "DD Form 2133", short: "Joint Airlift Inspection", built: true },
+  { slug: "dangerous-cargo-load-list", title: "DD Form 2776", short: "Dangerous Cargo Load List", hidden: true, built: true },
+  { slug: "packing-list", title: "DD Form 1750", short: "Packing List", hidden: true, built: true },
+  { slug: "military-shipment-label", title: "DD Form 1387", short: "Military Shipment Label", hidden: true },
+  { slug: "special-services-label", title: "DD Form 1387-2", short: "Special Services Label", hidden: true },
 ];
 
 export function stepPath(id: string, slug: string): string {
@@ -174,5 +222,5 @@ export function stepPath(id: string, slug: string): string {
 
 export function nextStep(slug: string): PacketStep | undefined {
   const index = PACKET_STEPS.findIndex((step) => step.slug === slug);
-  return PACKET_STEPS[index + 1];
+  return PACKET_STEPS.slice(index + 1).find((step) => step.built && !step.hidden);
 }

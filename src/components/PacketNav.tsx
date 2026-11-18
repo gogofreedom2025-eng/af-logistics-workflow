@@ -4,7 +4,7 @@ import { nextStep, PACKET_STEPS, stepPath } from "../types/loadPlan";
 export function PacketNav({ id, locked = false }: { id: string; locked?: boolean }) {
   return (
     <nav className="shipment-nav" aria-label="Airlift forms">
-      {PACKET_STEPS.map((step) => {
+      {PACKET_STEPS.filter((step) => !step.hidden).map((step) => {
         const blocked = locked && step.slug !== "";
         if (blocked) {
           return (

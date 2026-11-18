@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { readRecord, writeRecord } from "./db";
-import { createBlankLoadPlan, createSeedLoadPlans, withLoadPlan, withSampleDangerousCargo } from "../data/loadPlan";
+import { createBlankLoadPlan, createSeedLoadPlans, withLoadPlan, withStoredPlan } from "../data/loadPlan";
 import type { AirliftPacket } from "../types/loadPlan";
 
 const STORAGE_KEY = "af-lwe-demo-v1";
@@ -73,7 +73,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const stored = await readRecord<AppState>(STORAGE_KEY);
         const legacy = stored ? undefined : readLegacyState();
         const base = stored ?? legacy ?? seedState();
-        const next = { loadPlans: (base.loadPlans ?? []).map(withSampleDangerousCargo) };
+        const next = { loadPlans: (base.loadPlans ?? []).map(withStoredPlan) };
         if (!stored) await writeRecord(STORAGE_KEY, next);
         if (!stored && legacy) localStorage.removeItem(STORAGE_KEY);
         if (cancelled) return;
@@ -84,7 +84,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const fallback = readLegacyState() ?? seedState();
         dispatch({
           type: "hydrate",
-          state: { loadPlans: (fallback.loadPlans ?? []).map(withSampleDangerousCargo) },
+          state: { loadPlans: (fallback.loadPlans ?? []).map(withStoredPlan) },
         });
         setReady(true);
       }

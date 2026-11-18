@@ -6,7 +6,11 @@ import type {
   DangerousCargo,
   DangerousCargoCert,
   DangerousCargoRow,
+  InspectionColumn,
+  JointInspection,
   LoadSequenceRow,
+  PackingList,
+  PackingListRow,
 } from "../types/loadPlan";
 import { newId, todayYYYYMMDD } from "../utils/format";
 
@@ -173,6 +177,90 @@ export function withSampleDangerousCargo(plan: AirliftPacket): AirliftPacket {
   return { ...plan, dangerousCargo: sampleDangerousCargo() };
 }
 
+export function emptyInspectionColumn(): InspectionColumn {
+  return { id: newId("inc"), identity: "", marks: {} };
+}
+
+export function emptyInspection(): JointInspection {
+  return {
+    deployingForce: "",
+    departureAirfield: "",
+    date: isoToday(),
+    aircraftAndMission: "",
+    loadChalk: "",
+    startTime: "",
+    completeTime: "",
+    mobilityForce: "",
+    chapter3: "",
+    columns: [emptyInspectionColumn()],
+    deployingRep: "",
+    mobilityInspector: "",
+    additionalInformation: "",
+  };
+}
+
+export function withInspection(value: JointInspection | undefined): JointInspection {
+  const base = emptyInspection();
+  if (!value) return base;
+  return {
+    ...base,
+    ...value,
+    chapter3: value.chapter3 ?? "",
+    columns: value.columns?.length
+      ? value.columns.map((column) => ({ ...column, marks: column.marks ?? {} }))
+      : base.columns,
+  };
+}
+
+function inspectionIsBlank(value: JointInspection | undefined): boolean {
+  if (!value) return true;
+  const text = [
+    value.deployingForce,
+    value.departureAirfield,
+    value.aircraftAndMission,
+    value.loadChalk,
+    value.mobilityForce,
+    value.deployingRep,
+    value.mobilityInspector,
+    value.additionalInformation,
+  ];
+  const columns = value.columns ?? [];
+  const anyColumn = columns.some(
+    (column) => column.identity?.trim() || Object.values(column.marks ?? {}).some(Boolean),
+  );
+  return text.every((item) => !item?.trim()) && !value.chapter3 && !anyColumn;
+}
+
+function sampleInspection(): JointInspection {
+  const column = (identity: string): InspectionColumn => ({
+    id: `inc-${identity.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+    identity,
+    marks: {},
+  });
+  return {
+    ...emptyInspection(),
+    deployingForce: "621 CRW",
+    departureAirfield: "Dover AFB",
+    date: "2026-11-13",
+    aircraftAndMission: "C-17A 08-8190 / PVRA7547",
+    loadChalk: "1",
+    columns: [
+      column("PLT-4401 / 463L pallet"),
+      column("PLT-4402 / 463L pallet"),
+      column("A-12 / M1151 HMMWV"),
+    ],
+  };
+}
+
+export function withSampleInspection(plan: AirliftPacket): AirliftPacket {
+  if (plan.id !== "lp-c17-sample" || !inspectionIsBlank(plan.inspection)) return plan;
+  return { ...plan, inspection: sampleInspection() };
+}
+
+export function withStoredPlan(plan: AirliftPacket): AirliftPacket {
+  return withSampleInspection(withSampleDangerousCargo(plan));
+}
+
 export function emptyDangerousCargo(): DangerousCargo {
   return {
     agencyName: "",
@@ -214,6 +302,57 @@ export function withDangerousCargo(value: DangerousCargo | undefined): Dangerous
 
 export function cargoWeight(plan: AirliftPacket): number {
   return (plan.rows ?? []).reduce((sum, row) => sum + (Number(row.grossWeight) || 0), 0);
+}
+
+export function packingRowTotal(initial: string, spares: string): string {
+  const left = initial.trim();
+  const right = spares.trim();
+  if (!left && !right) return "";
+  const initialQty = Number(left);
+  const sparesQty = Number(right);
+  if ((left && Number.isNaN(initialQty)) || (right && Number.isNaN(sparesQty))) return "";
+  return String((left ? initialQty : 0) + (right ? sparesQty : 0));
+}
+
+export function emptyPackingListRow(): PackingListRow {
+  return {
+    id: newId("box"),
+    boxNo: "",
+    contents: "",
+    unitOfIssue: "",
+    initial: "",
+    spares: "",
+    total: "",
+  };
+}
+
+export function emptyPackingList(): PackingList {
+  return {
+    packedBy: "",
+    boxCount: "",
+    requisitionNo: "",
+    orderNo: "",
+    endItem: "",
+    date: isoToday(),
+    rows: [emptyPackingListRow()],
+    typedName: "",
+    signature: "",
+  };
+}
+
+export function withPackingList(value: PackingList | undefined): PackingList {
+  const base = emptyPackingList();
+  if (!value) return base;
+  const stored = value as PackingList & { page?: string; pages?: string };
+  const { page: _page, pages: _pages, ...rest } = stored;
+  return {
+    ...base,
+    ...rest,
+    rows: (value.rows?.length ? value.rows : base.rows).map((row) => ({
+      ...row,
+      total: packingRowTotal(row.initial ?? "", row.spares ?? ""),
+    })),
+  };
 }
 
 export function createBlankLoadPlan(): AirliftPacket {
@@ -263,6 +402,8 @@ export function createBlankLoadPlan(): AirliftPacket {
     deployingRepName: "",
     inspectorName: "",
     block11: emptyMarks(),
+    inspection: emptyInspection(),
+    packingList: emptyPackingList(),
     rows: [emptyRow()],
     bellyWide: [emptyBellyWide()],
     bellyNarrow: [emptyBellyNarrow()],
@@ -302,6 +443,7 @@ export function createSeedLoadPlans(): AirliftPacket[] {
       deployingUnit: "621 CRW",
       chalk: "1",
       dangerousCargo: sampleDangerousCargo(),
+      inspection: sampleInspection(),
       rows: [
         row({
           equipment: "463L pallet",
@@ -351,6 +493,8 @@ export function withLoadPlan(plan: AirliftPacket): AirliftPacket {
     bellyWide: plan.bellyWide ?? [],
     bellyNarrow: plan.bellyNarrow ?? [],
     dangerousCargo: withDangerousCargo(plan.dangerousCargo),
+    inspection: withInspection(plan.inspection),
+    packingList: withPackingList(plan.packingList),
     operatingMoment: plan.operatingMoment ?? 0,
     cargoMailWeight: plan.cargoMailWeight ?? 0,
     cargoMailMoment: plan.cargoMailMoment ?? 0,

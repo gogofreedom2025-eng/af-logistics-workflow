@@ -33,17 +33,34 @@ body,
 }
 
 .site-header {
-  background: var(--af-blue-dark);
+  background: #010d27;
   color: #fff;
+  overflow: visible;
+}
+
+.site-header .usa-nav-container,
+.site-header .usa-navbar {
+  overflow: visible;
+}
+
+.site-header .usa-nav-container {
+  max-width: 75rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.site-header .usa-navbar {
+  height: auto;
+}
+
+.site-header .usa-logo {
+  margin: 0.5rem 0;
+  max-width: none;
 }
 
 .site-header a,
 .site-header .usa-nav__primary button {
   color: #fff;
-}
-
-.site-header .usa-logo {
-  margin: 0.75rem 0;
 }
 
 .site-header .usa-logo a {
@@ -63,6 +80,15 @@ body,
   opacity: 0.8;
 }
 
+.site-logo-img {
+  display: block;
+  height: auto;
+  width: auto;
+  max-height: 8.5rem;
+  max-width: min(46rem, 78vw);
+  transform: translateX(-3.22%);
+}
+
 .site-header .usa-button--outline {
   box-shadow: inset 0 0 0 2px #fff;
   color: #fff;
@@ -70,41 +96,65 @@ body,
 
 .header-menu {
   position: relative;
+  align-self: flex-end;
   margin-left: auto;
+  margin-bottom: 0.85rem;
 }
 
-.header-menu-button {
-  margin: 0.75rem 0;
+.site-header .header-menu-button.usa-button {
+  margin: 0;
+  border-radius: 0.6rem;
 }
 
 .header-menu-list {
   position: absolute;
-  top: calc(100% - 0.35rem);
+  top: calc(100% + 0.45rem);
   right: 0;
   z-index: 20;
-  min-width: 12rem;
+  min-width: 15rem;
   margin: 0;
-  padding: 0.25rem 0;
+  padding: 0.45rem;
   list-style: none;
   background: #fff;
   border: 1px solid #dfe1e2;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 0.85rem;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(1, 13, 39, 0.18);
 }
 
-.header-menu-list button {
+.header-menu-list button,
+.header-menu-list a {
   display: block;
   width: 100%;
-  padding: 0.6rem 0.9rem;
+  padding: 0.7rem 0.85rem;
   border: 0;
+  border-radius: 0.55rem;
   background: transparent;
   color: #1b1b1b;
+  font-weight: 600;
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
 }
 
 .header-menu-list button:hover,
-.header-menu-list button:focus {
-  background: #f0f0f0;
+.header-menu-list button:focus,
+.header-menu-list a:hover,
+.header-menu-list a:focus,
+.header-menu-list a.active {
+  background: #eef3f8;
+  color: var(--af-blue);
+}
+
+.saved-record {
+  margin: 0;
+  padding: 1rem;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #1b1b1b;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  white-space: pre;
 }
 
 .site-nav {
@@ -388,6 +438,31 @@ body,
   padding: 0.75rem 0.75rem 0.85rem;
 }
 
+.packing-notes p {
+  margin: 0 0 0.75rem;
+}
+
+.packing-notes p:last-child {
+  margin-bottom: 0;
+}
+
+.packing-columns {
+  margin-left: 1.5rem;
+  padding-bottom: 0.75rem;
+}
+
+.packing-note {
+  font-style: italic;
+}
+
+.packing-notes .packing-subnote {
+  margin-left: 1.5rem;
+}
+
+.pack-total .usa-input {
+  background: #f0f0f0;
+}
+
 .worksheet-prose + .cargo-block {
   border-top: 1px solid #1b1b1b;
 }
@@ -441,6 +516,78 @@ body,
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.inspect-choice {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.inspect-scroll {
+  overflow-x: auto;
+}
+
+.inspect-table {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.inspect-table th,
+.inspect-table td {
+  padding: 0.45rem 0.65rem;
+  border-right: 1px solid #1b1b1b;
+  border-bottom: 1px solid #1b1b1b;
+  text-align: left;
+  font-weight: 400;
+  vertical-align: top;
+}
+
+.inspect-table th:last-child,
+.inspect-table td:last-child {
+  border-right: none;
+}
+
+.inspect-table tr:last-child th,
+.inspect-table tr:last-child td {
+  border-bottom: none;
+}
+
+.inspect-table thead th {
+  background: #fff;
+}
+
+.inspect-table tbody th {
+  min-width: 16rem;
+}
+
+.inspect-table td {
+  min-width: 11rem;
+}
+
+.inspect-section th {
+  background: #f0f0f0;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+.inspect-section .worksheet-unit {
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 0.85rem;
+}
+
+.inspect-table .usa-input,
+.inspect-table .usa-select {
+  margin-top: 0.35rem;
+  max-width: none;
+}
+
+.cargo-block + .worksheet-prose {
+  border-top: 1px solid #1b1b1b;
+}
+
 .plan-times {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -458,6 +605,33 @@ body,
   border-top: 1px solid #1b1b1b;
 }
 
+.pack-row-item {
+  display: grid;
+  grid-template-columns: 0.7fr 2fr 0.9fr;
+}
+
+.pack-qty-label {
+  padding: 0.45rem 0.75rem;
+  border-top: 1px solid #1b1b1b;
+  border-bottom: 1px solid #1b1b1b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  color: #3d4551;
+}
+
+.pack-row-qty {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pack-row-cert {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
 .cargo-field {
   padding: 0.55rem 0.75rem 0.75rem;
   border-right: 1px solid #1b1b1b;
@@ -471,7 +645,10 @@ body,
 .plan-row-load .cargo-field:last-child,
 .plan-row-belly .cargo-field:last-child,
 .plan-row-measures .cargo-field:last-child,
-.plan-row-narrow .cargo-field:last-child {
+.plan-row-narrow .cargo-field:last-child,
+.pack-row-item .cargo-field:last-child,
+.pack-row-qty .cargo-field:last-child,
+.pack-row-cert .cargo-field:last-child {
   border-right: none;
 }
 
@@ -491,7 +668,10 @@ body,
   .plan-row-load,
   .plan-row-belly,
   .plan-row-measures,
-  .plan-row-narrow {
+  .plan-row-narrow,
+  .pack-row-item,
+  .pack-row-qty,
+  .pack-row-cert {
     grid-template-columns: 1fr;
   }
 
@@ -500,7 +680,10 @@ body,
   .plan-row-load .cargo-field,
   .plan-row-belly .cargo-field,
   .plan-row-measures .cargo-field,
-  .plan-row-narrow .cargo-field {
+  .plan-row-narrow .cargo-field,
+  .pack-row-item .cargo-field,
+  .pack-row-qty .cargo-field,
+  .pack-row-cert .cargo-field {
     border-right: none;
   }
 
@@ -509,7 +692,10 @@ body,
   .plan-row-load .cargo-field:not(:last-child),
   .plan-row-belly .cargo-field:not(:last-child),
   .plan-row-measures .cargo-field:not(:last-child),
-  .plan-row-narrow .cargo-field:not(:last-child) {
+  .plan-row-narrow .cargo-field:not(:last-child),
+  .pack-row-item .cargo-field:not(:last-child),
+  .pack-row-qty .cargo-field:not(:last-child),
+  .pack-row-cert .cargo-field:not(:last-child) {
     border-bottom: 1px solid #dfe1e2;
   }
 }

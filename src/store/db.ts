@@ -1,7 +1,7 @@
-const DB_NAME = "hayden-cody-gogo-db";
-const LEGACY_KEY = "af-lwe-demo-v1";
+export const DB_NAME = "hayden-cody-gogo-db";
+export const RECORD_KEY = "af-lwe-demo-v1";
+export const STORE = "app";
 const DB_VERSION = 1;
-const STORE = "app";
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -43,7 +43,7 @@ export async function writeRecord<T>(key: string, value: T): Promise<void> {
 }
 
 export function clearDatabase(): Promise<void> {
-  localStorage.removeItem(LEGACY_KEY);
+  localStorage.removeItem(RECORD_KEY);
   return new Promise((resolve, reject) => {
     const request = indexedDB.deleteDatabase(DB_NAME);
     request.onsuccess = () => resolve();
