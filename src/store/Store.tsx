@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { readRecord, writeRecord } from "./db";
-import { createBlankLoadPlan, createSeedLoadPlans, withLoadPlan, withStoredPlan } from "../data/loadPlan";
+import { createBlankLoadPlan, withLoadPlan, withStoredPlan } from "../data/loadPlan";
 import type { AirliftPacket } from "../types/loadPlan";
 
 const STORAGE_KEY = "af-lwe-demo-v1";
@@ -32,7 +32,11 @@ interface StoreValue extends AppState {
 const StoreContext = createContext<StoreValue | null>(null);
 
 function seedState(): AppState {
-  return { loadPlans: createSeedLoadPlans() };
+  return { loadPlans: [] };
+}
+
+function storedPlans(plans: AirliftPacket[] | undefined): AirliftPacket[] {
+  return (plans ?? []).filter((plan) => plan.id !== "lp-c17-sample").map(withStoredPlan);
 }
 
 function readLegacyState(): AppState | undefined {
@@ -73,7 +77,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const stored = await readRecord<AppState>(STORAGE_KEY);
         const legacy = stored ? undefined : readLegacyState();
         const base = stored ?? legacy ?? seedState();
-        const next = { loadPlans: (base.loadPlans ?? []).map(withStoredPlan) };
+        const next = { loadPlans: storedPlans(base.loadPlans) };
         if (!stored) await writeRecord(STORAGE_KEY, next);
         if (!stored && legacy) localStorage.removeItem(STORAGE_KEY);
         if (cancelled) return;
@@ -84,7 +88,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const fallback = readLegacyState() ?? seedState();
         dispatch({
           type: "hydrate",
-          state: { loadPlans: (fallback.loadPlans ?? []).map(withStoredPlan) },
+          state: { loadPlans: storedPlans(fallback.loadPlans) },
         });
         setReady(true);
       }

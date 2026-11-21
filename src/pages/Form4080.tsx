@@ -1,7 +1,7 @@
 ﻿import { Link, useParams } from "react-router-dom";
 import type { ReactNode } from "react";
-import { PacketNav, StepContinue } from "../components/PacketNav";
-import { cargoWeight, emptyBellyNarrow, emptyBellyWide, emptyRow } from "../data/loadPlan";
+import { FormSave } from "../components/FormSave";
+import { cargoWeight, emptyBellyNarrow, emptyBellyWide, emptyRow, formatSavedAt, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, BellyNarrowRow, BellyWideRow, LoadSequenceRow } from "../types/loadPlan";
 
@@ -32,8 +32,8 @@ export function Form4080() {
     patch({
       bellyNarrow: (plan.bellyNarrow ?? []).map((row) => (row.id === rowId ? { ...row, ...partial } : row)),
     });
-  const missionMissing = !plan.missionNumber.trim();
   const total = cargoWeight(plan);
+  const specialCount = plan.rows.filter((row) => row.specialHandling).length;
   const acl = Number(plan.aclOffered);
   const bellyWide = plan.bellyWide ?? [];
   const bellyNarrow = plan.bellyNarrow ?? [];
@@ -41,14 +41,7 @@ export function Form4080() {
   return (
     <div className="page-wrap">
       <p className="page-kicker">AF Form 4080 Â· Load/Sequence Breakdown Worksheet</p>
-      <h1>
-        {plan.missionNumber || "New load plan"}{" "}
-        <span className={`status-tag ${plan.status === "inspected" ? "status-received" : "status-draft"}`}>
-          {plan.status === "inspected" ? "Inspected" : "In progress"}
-        </span>
-      </h1>
-      <PacketNav id={plan.id} locked={missionMissing} />
-
+      <h1>AF Form 4080{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
         <h2 className="worksheet-banner">Load/Sequence Breakdown Worksheet</h2>
         <div className="worksheet-row cols-4">
@@ -89,7 +82,7 @@ export function Form4080() {
       <div className="section-card worksheet-sheet sheet-frame">
         <h2 className="worksheet-banner">A. Planned load distribution</h2>
         {plan.rows.map((row) => (
-          <div className="cargo-block" key={row.id}>
+          <div className="sheet-block" key={row.id}>
             <div className="cargo-row plan-row-load">
               <PlanField id={`${row.id}-station`} label="Station" value={row.station || ""} onChange={(station) => updateRow(row.id, { station })} />
               <PlanField id={`${row.id}-position`} label="Pallet position" value={row.position} onChange={(position) => updateRow(row.id, { position })} />
@@ -111,10 +104,15 @@ export function Form4080() {
           onAdd={() => patch({ rows: [...plan.rows, emptyRow()] })}
           onRemove={() => patch({ rows: plan.rows.slice(0, -1) })}
           note={
-            <span>
-              Cargo weight <strong>{total.toLocaleString("en-US")} lb</strong>
-              {acl > 0 ? ` of ${acl.toLocaleString("en-US")} lb ACL` : ""}
-            </span>
+            <>
+              <span>
+                Cargo weight <strong>{total.toLocaleString("en-US")} lb</strong>
+                {acl > 0 ? ` of ${acl.toLocaleString("en-US")} lb ACL` : ""}
+              </span>
+              <span>
+                Special handling totals <strong>{specialCount}</strong>
+              </span>
+            </>
           }
         />
       </div>
@@ -122,7 +120,7 @@ export function Form4080() {
       <div className="section-card worksheet-sheet sheet-frame">
         <h2 className="worksheet-banner">B. Belly compartment (747 / DC 10 / MD 11)</h2>
         {bellyWide.map((row) => (
-          <div className="cargo-block" key={row.id}>
+          <div className="sheet-block" key={row.id}>
             <div className="cargo-row plan-row-belly">
               <PlanField id={`${row.id}-position`} label="Position" value={row.position} onChange={(position) => updateWide(row.id, { position })} />
               <PlanField id={`${row.id}-id`} label="Identification" value={row.identification} onChange={(identification) => updateWide(row.id, { identification })} />
@@ -148,7 +146,7 @@ export function Form4080() {
       <div className="section-card worksheet-sheet sheet-frame">
         <h2 className="worksheet-banner">C. Belly compartment (DC 8 / 707)</h2>
         {bellyNarrow.map((row) => (
-          <div className="cargo-block" key={row.id}>
+          <div className="sheet-block" key={row.id}>
             <div className="cargo-row plan-row-narrow">
               <PlanField id={`${row.id}-location`} label="Location" value={row.location} onChange={(location) => updateNarrow(row.id, { location })} />
               <PlanField id={`${row.id}-dest`} label="Destination" value={row.destination} onChange={(destination) => updateNarrow(row.id, { destination })} />
@@ -253,7 +251,11 @@ export function Form4080() {
         </div>
       </div>
 
-      <StepContinue id={plan.id} slug="" blocked={missionMissing} />
+      <FormSave
+        disabled={!plan.missionNumber.trim()}
+        hint="Complete all required fields to save."
+        onSave={() => saveLoadPlan(withSavedForm(plan, "AF Form 4080", ""))}
+      />
     </div>
   );
 }

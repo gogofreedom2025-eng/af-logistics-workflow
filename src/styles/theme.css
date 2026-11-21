@@ -190,6 +190,32 @@ body,
   box-shadow: inset 3px 0 0 #c73e3e;
 }
 
+.form-catalog {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.form-catalog .catalog-form.usa-button {
+  margin: 0;
+  padding: 0.6rem 1.15rem;
+  border-radius: 0.6rem;
+  letter-spacing: 0.06em;
+  color: var(--af-blue);
+  background: #fff;
+  box-shadow: inset 0 0 0 2px var(--af-blue);
+  transition: background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+}
+
+.form-catalog .catalog-form.usa-button:hover,
+.form-catalog .catalog-form.usa-button:focus {
+  color: var(--af-blue);
+  background: rgba(56, 182, 255, 0.14);
+  box-shadow: inset 0 0 0 2px #38b6ff;
+}
+
 .saved-record {
   margin: 0;
   padding: 1rem;
@@ -405,6 +431,17 @@ body,
   margin-top: 0.2rem;
   letter-spacing: normal;
   font-size: 0.85rem;
+  text-transform: none;
+}
+
+.sheet-band {
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid #1b1b1b;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .worksheet-row {
@@ -413,6 +450,14 @@ body,
 
 .worksheet-row.cols-2 {
   grid-template-columns: 1fr 1fr;
+}
+
+.worksheet-row.cols-quarter {
+  grid-template-columns: 1fr 3fr;
+}
+
+.worksheet-row.cols-quarter-end {
+  grid-template-columns: 3fr 1fr;
 }
 
 .worksheet-row.cols-3 {
@@ -428,11 +473,115 @@ body,
   border-top: 1px solid #1b1b1b;
 }
 
+.worksheet-row.cols-even-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.pallet-lower,
+.label-lower {
+  grid-template-columns: 1fr 1fr;
+}
+
+.label-top {
+  grid-template-columns: 1fr 2fr;
+}
+
+.aircraft-scroll {
+  overflow-x: auto;
+}
+
+.aircraft-line {
+  display: grid;
+  grid-template-columns: 4.5rem 14rem 11rem 5.5rem 10rem repeat(3, 4.5rem) repeat(6, 6.5rem);
+  min-width: 78rem;
+  border-top: 1px solid #1b1b1b;
+}
+
+.aircraft-line > * {
+  min-width: 0;
+  padding: 0.4rem 0.45rem 0.5rem;
+  border-right: 1px solid #1b1b1b;
+}
+
+.aircraft-line > :last-child {
+  border-right: none;
+}
+
+.aircraft-line .usa-input {
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
+  max-width: none;
+}
+
+.aircraft-line-head .worksheet-label {
+  margin-bottom: 0;
+}
+
+.aircraft-remarks p {
+  margin: 0 0 0.2rem;
+}
+
+.aircraft-remarks p:last-child {
+  margin-bottom: 0;
+}
+
+.label-consignee {
+  display: flex;
+  flex-direction: column;
+}
+
+.label-consignee .usa-textarea {
+  flex: 1;
+}
+
+.label-side > .worksheet-row + .worksheet-row {
+  border-top: 1px solid #1b1b1b;
+}
+
+.worksheet-prose + .worksheet-row.after-prose {
+  border-top: 1px solid #1b1b1b;
+}
+
+.pallet-contents {
+  display: flex;
+  flex-direction: column;
+}
+
+.pallet-contents .usa-textarea {
+  flex: 1;
+}
+
+.pallet-side > .worksheet-cell {
+  border-right: none;
+  border-bottom: 1px solid #1b1b1b;
+}
+
+.pallet-side > .worksheet-cell:last-child {
+  border-bottom: none;
+}
+
+.cert-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.cert-fields .worksheet-cell {
+  padding: 0;
+  border-right: none;
+}
+
+.worksheet-row.cols-even-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
 .worksheet-grid .worksheet-row + .worksheet-row {
   border-top: 1px solid #1b1b1b;
 }
 
 .worksheet-cell {
+  min-width: 0;
   padding: 0.55rem 0.75rem 0.75rem;
   border-right: 1px solid #1b1b1b;
 }
@@ -457,6 +606,16 @@ body,
   text-transform: none;
 }
 
+.save-hint {
+  color: #b50909;
+  font-weight: 600;
+}
+
+.saved-note {
+  color: #2e8540;
+  font-weight: 600;
+}
+
 .worksheet-unit {
   font-style: italic;
   font-weight: 400;
@@ -464,16 +623,16 @@ body,
   color: #71767a;
 }
 
-.cargo-block {
+.sheet-block {
   border-bottom: 1px solid #1b1b1b;
 }
 
-.cargo-block + .cargo-block {
-  border-top: 0.75rem solid #f0f0f0;
+.sheet-block + .sheet-block {
+  border-top: 0.75rem solid #c9c9c9;
   box-shadow: inset 0 1px 0 #1b1b1b;
 }
 
-.sheet-frame > .cargo-block:last-child {
+.sheet-frame > .sheet-block:last-child {
   border-bottom: none;
 }
 
@@ -507,8 +666,13 @@ body,
   background: #f0f0f0;
 }
 
-.worksheet-prose + .cargo-block {
+.worksheet-row + .worksheet-prose,
+.worksheet-prose + .sheet-block {
   border-top: 1px solid #1b1b1b;
+}
+
+.worksheet-prose + .sheet-block > .cargo-row-full:first-child {
+  border-top: none;
 }
 
 .worksheet-sheet .actions-row {
@@ -565,51 +729,34 @@ body,
   gap: 1.25rem;
 }
 
-.inspect-scroll {
-  overflow-x: auto;
+.inspect-increments,
+.inspect-items {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.inspect-table {
-  width: 100%;
-  min-width: 46rem;
-  border-collapse: collapse;
-  background: #fff;
-}
-
-.inspect-table th,
-.inspect-table td {
-  padding: 0.45rem 0.65rem;
+.inspect-increment,
+.inspect-item {
+  min-width: 0;
+  padding: 0.45rem 0.65rem 0.65rem;
   border-right: 1px solid #1b1b1b;
   border-bottom: 1px solid #1b1b1b;
-  text-align: left;
-  font-weight: 400;
-  vertical-align: top;
 }
 
-.inspect-table th:last-child,
-.inspect-table td:last-child {
+.inspect-increment:nth-child(3n),
+.inspect-item:nth-child(3n) {
   border-right: none;
 }
 
-.inspect-table tr:last-child th,
-.inspect-table tr:last-child td {
-  border-bottom: none;
+.inspect-increment:only-child {
+  grid-column: 1 / -1;
 }
 
-.inspect-table thead th {
+.inspect-section {
+  margin: 0;
+  padding: 0.45rem 0.65rem;
+  border-bottom: 1px solid #1b1b1b;
   background: #fff;
-}
-
-.inspect-table tbody th {
-  min-width: 16rem;
-}
-
-.inspect-table td {
-  min-width: 11rem;
-}
-
-.inspect-section th {
-  background: #f0f0f0;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -622,14 +769,35 @@ body,
   font-size: 0.85rem;
 }
 
-.inspect-table .usa-input,
-.inspect-table .usa-select {
+.inspect-sign-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.inspect-sign-row > :first-child {
+  border-right: 1px solid #1b1b1b;
+}
+
+.inspect-increment .usa-input,
+.inspect-item .usa-select {
+  width: 100%;
   margin-top: 0.35rem;
   max-width: none;
 }
 
-.cargo-block + .worksheet-prose {
-  border-top: 1px solid #1b1b1b;
+
+.worksheet-cell > .usa-input + .worksheet-label,
+.worksheet-cell > .usa-input + .usa-fieldset {
+  margin-top: 1rem;
+}
+
+.travel-priority .usa-radio__label {
+  display: block;
+  max-width: none;
+}
+
+.worksheet-cell > .usa-input + .usa-fieldset > .usa-legend {
+  margin-top: 0;
 }
 
 .plan-times {
@@ -715,8 +883,23 @@ body,
   .plan-row-narrow,
   .pack-row-item,
   .pack-row-qty,
-  .pack-row-cert {
+  .pack-row-cert,
+  .inspect-items,
+  .inspect-sign-row {
     grid-template-columns: 1fr;
+  }
+
+  .inspect-item,
+  .inspect-sign-row > :first-child {
+    border-right: none;
+  }
+
+  .inspect-sign-row > :first-child {
+    border-bottom: 1px solid #1b1b1b;
+  }
+
+  .inspect-item-pad {
+    display: none;
   }
 
   .cargo-row-id .cargo-field,
@@ -746,6 +929,8 @@ body,
 
 .worksheet-cell .usa-input,
 .worksheet-cell .usa-textarea {
+  width: 100%;
+  min-width: 0;
   margin-top: 0;
   max-width: none;
 }
@@ -775,15 +960,26 @@ body,
 
 @media (max-width: 48rem) {
   .worksheet-row.cols-2,
+  .worksheet-row.cols-quarter,
+  .worksheet-row.cols-quarter-end,
   .worksheet-row.cols-3,
+  .worksheet-row.cols-even-3,
+  .worksheet-row.cols-even-5,
   .worksheet-row.cols-4,
-  .worksheet-row.cols-5 {
+  .worksheet-row.cols-5,
+  .worksheet-row.pallet-lower,
+  .worksheet-row.label-lower,
+  .worksheet-row.label-top {
     grid-template-columns: 1fr;
   }
 
   .worksheet-cell {
     border-right: none;
     border-bottom: 1px solid #dfe1e2;
+  }
+
+  .cert-fields {
+    grid-template-columns: 1fr;
   }
 }
 

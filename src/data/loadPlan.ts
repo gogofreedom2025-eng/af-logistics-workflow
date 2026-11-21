@@ -9,6 +9,18 @@ import type {
   InspectionColumn,
   JointInspection,
   LoadSequenceRow,
+  AirRequest,
+  AirRequestContact,
+  AirRequestLeg,
+  AirRequestPassenger,
+  AirRequestSigner,
+  CargoManifest,
+  CargoManifestRow,
+  PalletIdentifier,
+  ShipmentLabel,
+  SpecialHandling,
+  AircraftLoadLine,
+  AircraftLoadPlan,
   PackingList,
   PackingListRow,
 } from "../types/loadPlan";
@@ -304,6 +316,10 @@ export function cargoWeight(plan: AirliftPacket): number {
   return (plan.rows ?? []).reduce((sum, row) => sum + (Number(row.grossWeight) || 0), 0);
 }
 
+export function digitsOnly(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
 export function packingRowTotal(initial: string, spares: string): string {
   const left = initial.trim();
   const right = spares.trim();
@@ -312,6 +328,338 @@ export function packingRowTotal(initial: string, spares: string): string {
   const sparesQty = Number(right);
   if ((left && Number.isNaN(initialQty)) || (right && Number.isNaN(sparesQty))) return "";
   return String((left ? initialQty : 0) + (right ? sparesQty : 0));
+}
+
+export function emptyCargoManifestRow(): CargoManifestRow {
+  return {
+    id: newId("man"),
+    docId: "",
+    vehicleNumber: "",
+    year: "",
+    make: "",
+    containerNumber: "",
+    commodity: "",
+    comCode: "",
+    cargoExc: "",
+    voyageDocNo: "",
+    airDm: "",
+    trnsPt: "",
+    portOfDisch: "",
+    typePack: "",
+    tcn: "",
+    consignee: "",
+    serv: "",
+    activityAddress: "",
+    priority: "",
+    name: "",
+    ammoLot: "",
+    dimensions: "",
+    rdd: "",
+    proj: "",
+    stowLoc: "",
+    transAcct: "",
+    identification: "",
+    pieces: "",
+    weight: "",
+    cube: "",
+  };
+}
+
+export function emptyPalletIdentifier(): PalletIdentifier {
+  return {
+    palletId: "",
+    aircraftConfiguration: "",
+    originatingStation: "",
+    destinationStation: "",
+    netWeight: "",
+    straps: "",
+    chains: "",
+    devices: "",
+    netSets: "",
+    contents: "",
+    grossWeight: "",
+    scaleName: "",
+    scaleGrade: "",
+    scaleDate: "",
+    cube: "",
+  };
+}
+
+export function withPalletIdentifier(value: PalletIdentifier | undefined): PalletIdentifier {
+  return { ...emptyPalletIdentifier(), ...value };
+}
+
+export function emptyShipmentLabel(): ShipmentLabel {
+  return {
+    tcn: "",
+    postageData: "",
+    from: "",
+    typeService: "",
+    shipTo: "",
+    transPriority: "",
+    pod: "",
+    project: "",
+    ultimateConsignee: "",
+    weight: "",
+    rdd: "",
+    cube: "",
+    charges: "",
+    dateShipped: "",
+    fmsCase: "",
+    pieceNumber: "",
+    totalPieces: "",
+  };
+}
+
+export function withShipmentLabel(value: ShipmentLabel | undefined): ShipmentLabel {
+  return { ...emptyShipmentLabel(), ...value };
+}
+
+export function emptySpecialHandling(): SpecialHandling {
+  return {
+    nomenclature: "",
+    netQuantity: "",
+    tcn: "",
+    grossWeight: "",
+    destination: "",
+    supplemental: "",
+    dtrReference: "",
+    handlingInstructions: "",
+    shipperAddress: "",
+    typedName: "",
+    signature: "",
+    date: "",
+  };
+}
+
+export function withSpecialHandling(value: SpecialHandling | undefined): SpecialHandling {
+  return { ...emptySpecialHandling(), ...value };
+}
+
+export function emptyAircraftLoadLine(): AircraftLoadLine {
+  return {
+    id: newId("load"),
+    sequence: "",
+    nomenclature: "",
+    tcn: "",
+    remarksCode: "",
+    otherRemarks: "",
+    length: "",
+    width: "",
+    height: "",
+    plannedWeight: "",
+    plannedStation: "",
+    plannedMoment: "",
+    actualWeight: "",
+    actualStation: "",
+    actualMoment: "",
+  };
+}
+
+function fillAircraftLoadLine(row?: Partial<AircraftLoadLine>): AircraftLoadLine {
+  const blank = {
+    sequence: "",
+    nomenclature: "",
+    tcn: "",
+    remarksCode: "",
+    otherRemarks: "",
+    length: "",
+    width: "",
+    height: "",
+    plannedWeight: "",
+    plannedStation: "",
+    plannedMoment: "",
+    actualWeight: "",
+    actualStation: "",
+    actualMoment: "",
+  };
+  return { ...blank, ...row, id: row?.id || newId("load") };
+}
+
+export function emptyAircraftLoadPlan(): AircraftLoadPlan {
+  return {
+    unit: "",
+    uic: "",
+    movementPlan: "",
+    movementDate: "",
+    loadNumber: "",
+    page: "",
+    pages: "",
+    missionNumber: "",
+    aircraftSerial: "",
+    configuration: "",
+    departureAirfield: "",
+    destinationAirfield: "",
+    lines: [emptyAircraftLoadLine()],
+    seatCount: "",
+    seatAverageWeight: "",
+    seatPlannedWeight: "",
+    seatNotes: "",
+    weightFromBack: "",
+    momentFromBack: "",
+    plannedCbStation: "",
+    actualCbStation: "",
+    totalPlannedWeight: "",
+    totalPlannedMoment: "",
+    totalActualWeight: "",
+    totalActualMoment: "",
+    plannedDate: "",
+    plannedName: "",
+    plannedSignature: "",
+    approvedDate: "",
+    approvedName: "",
+    approvedSignature: "",
+  };
+}
+
+export function withAircraftLoadPlan(value: AircraftLoadPlan | undefined): AircraftLoadPlan {
+  const base = emptyAircraftLoadPlan();
+  if (!value) return base;
+  return {
+    ...base,
+    ...value,
+    lines: value.lines?.length ? value.lines.map((line) => fillAircraftLoadLine(line)) : base.lines,
+  };
+}
+
+export function emptyAirRequestPassenger(): AirRequestPassenger {
+  return { id: newId("pax"), name: "", grade: "", dutyTitle: "", branch: "" };
+}
+
+function emptyAirRequestLeg(): AirRequestLeg {
+  return { departureIcao: "", departWhen: "", arrivalIcao: "", arriveWhen: "" };
+}
+
+function emptyAirRequestContact(): AirRequestContact {
+  return { name: "", grade: "", dutyPhone: "", afterHours: "" };
+}
+
+function emptyAirRequestSigner(): AirRequestSigner {
+  return {
+    name: "",
+    grade: "",
+    dutyTitle: "",
+    officeSymbol: "",
+    phone: "",
+    signature: "",
+    date: "",
+    plad: "",
+  };
+}
+
+function airRequestPassengers(rows: AirRequestPassenger[] | undefined): AirRequestPassenger[] {
+  return rows?.length ? rows.map((row) => ({ ...emptyAirRequestPassenger(), ...row, id: row.id || newId("pax") })) : [emptyAirRequestPassenger(), emptyAirRequestPassenger(), emptyAirRequestPassenger()];
+}
+
+function airRequestLegs(rows: AirRequestLeg[] | undefined): AirRequestLeg[] {
+  const legs = (rows ?? []).slice(0, 3).map((leg) => ({ ...emptyAirRequestLeg(), ...leg }));
+  while (legs.length < 3) legs.push(emptyAirRequestLeg());
+  return legs;
+}
+
+export function emptyAirRequest(): AirRequest {
+  return {
+    priority: "",
+    pujcCode: "",
+    missionDescription: "",
+    totalPax: "",
+    compellingConsiderations: "",
+    seniorName: "",
+    seniorGrade: "",
+    seniorDutyTitle: "",
+    seniorBranch: "",
+    passengers: airRequestPassengers(undefined),
+    legs: airRequestLegs(undefined),
+    costLeg1: "",
+    costLeg2: "",
+    costLeg3: "",
+    costTimesPassengers: "",
+    costTotal: "",
+    cargoDescription: "",
+    largestDimensions: "",
+    heaviestItem: "",
+    totalWeight: "",
+    totalCubicFeet: "",
+    specialHandling: "",
+    departureContact: emptyAirRequestContact(),
+    arrivalContact: emptyAirRequestContact(),
+    nonDvPassengers: airRequestPassengers(undefined),
+    remarks: "",
+    requester: emptyAirRequestSigner(),
+    authorizer: emptyAirRequestSigner(),
+    seniorPassenger: emptyAirRequestSigner(),
+  };
+}
+
+export function withAirRequest(value: AirRequest | undefined): AirRequest {
+  const base = emptyAirRequest();
+  if (!value) return base;
+  const priority = value.priority === "1" || value.priority === "2" || value.priority === "3" ? value.priority : "";
+  return {
+    ...base,
+    ...value,
+    priority,
+    passengers: airRequestPassengers(value.passengers),
+    legs: airRequestLegs(value.legs),
+    departureContact: { ...emptyAirRequestContact(), ...value.departureContact },
+    arrivalContact: { ...emptyAirRequestContact(), ...value.arrivalContact },
+    nonDvPassengers: airRequestPassengers(value.nonDvPassengers),
+    requester: { ...emptyAirRequestSigner(), ...value.requester },
+    authorizer: { ...emptyAirRequestSigner(), ...value.authorizer },
+    seniorPassenger: { ...emptyAirRequestSigner(), ...value.seniorPassenger },
+  };
+}
+
+export function emptyCargoManifest(): CargoManifest {
+  return {
+    carrier: "",
+    acNo: "",
+    acModel: "",
+    destCode: "",
+    airRef: "",
+    destination: "",
+    missionNo: "",
+    missionSu: "",
+    missionDate: "",
+    alwWt: "",
+    alwCu: "",
+    manifestSta: "",
+    manifestFy: "",
+    manifestTy: "",
+    manifestNo: "",
+    airPageNo: "",
+    poe: "",
+    dateSailed: "",
+    voyageDocumentNo: "",
+    pod: "",
+    surfaceRef: "",
+    vesselName: "",
+    status: "",
+    sust: "",
+    truckNo: "",
+    remarks: "",
+    surfacePageNo: "",
+    rows: [emptyCargoManifestRow()],
+    totalPieces: "",
+    totalWeight: "",
+    totalCube: "",
+    loadedDate: "",
+    loadingAgent: "",
+    receivedDate: "",
+    unloadingAgent: "",
+    receivingDate: "",
+    receivingAgent: "",
+  };
+}
+
+export function withCargoManifest(value: CargoManifest | undefined): CargoManifest {
+  const base = emptyCargoManifest();
+  if (!value) return base;
+  return {
+    ...base,
+    ...value,
+    rows: value.rows?.length ? value.rows : base.rows,
+  };
 }
 
 export function emptyPackingListRow(): PackingListRow {
@@ -348,8 +696,12 @@ export function withPackingList(value: PackingList | undefined): PackingList {
   return {
     ...base,
     ...rest,
+    boxCount: digitsOnly(rest.boxCount ?? ""),
+    requisitionNo: digitsOnly(rest.requisitionNo ?? ""),
+    orderNo: digitsOnly(rest.orderNo ?? ""),
     rows: (value.rows?.length ? value.rows : base.rows).map((row) => ({
       ...row,
+      boxNo: digitsOnly(row.boxNo ?? ""),
       total: packingRowTotal(row.initial ?? "", row.spares ?? ""),
     })),
   };
@@ -404,6 +756,16 @@ export function createBlankLoadPlan(): AirliftPacket {
     block11: emptyMarks(),
     inspection: emptyInspection(),
     packingList: emptyPackingList(),
+    cargoManifest: emptyCargoManifest(),
+    palletIdentifier: emptyPalletIdentifier(),
+    airRequest: emptyAirRequest(),
+    shipmentLabel: emptyShipmentLabel(),
+    specialHandling: emptySpecialHandling(),
+    c17LoadPlan: emptyAircraftLoadPlan(),
+    c130LoadPlan: emptyAircraftLoadPlan(),
+    savedTitle: "",
+    savedSlug: "",
+    savedAt: "",
     rows: [emptyRow()],
     bellyWide: [emptyBellyWide()],
     bellyNarrow: [emptyBellyNarrow()],
@@ -487,6 +849,22 @@ export function createSeedLoadPlans(): AirliftPacket[] {
   ];
 }
 
+export function withSavedForm(plan: AirliftPacket, title: string, slug: string): AirliftPacket {
+  return { ...plan, savedTitle: title, savedSlug: slug, savedAt: new Date().toISOString() };
+}
+
+export function formatSavedAt(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export function withLoadPlan(plan: AirliftPacket): AirliftPacket {
   return {
     ...plan,
@@ -495,6 +873,16 @@ export function withLoadPlan(plan: AirliftPacket): AirliftPacket {
     dangerousCargo: withDangerousCargo(plan.dangerousCargo),
     inspection: withInspection(plan.inspection),
     packingList: withPackingList(plan.packingList),
+    cargoManifest: withCargoManifest(plan.cargoManifest),
+    palletIdentifier: withPalletIdentifier(plan.palletIdentifier),
+    airRequest: withAirRequest(plan.airRequest),
+    shipmentLabel: withShipmentLabel(plan.shipmentLabel),
+    specialHandling: withSpecialHandling(plan.specialHandling),
+    c17LoadPlan: withAircraftLoadPlan(plan.c17LoadPlan),
+    c130LoadPlan: withAircraftLoadPlan(plan.c130LoadPlan),
+    savedTitle: plan.savedTitle ?? "",
+    savedSlug: plan.savedSlug ?? "",
+    savedAt: plan.savedAt ?? "",
     operatingMoment: plan.operatingMoment ?? 0,
     cargoMailWeight: plan.cargoMailWeight ?? 0,
     cargoMailMoment: plan.cargoMailMoment ?? 0,

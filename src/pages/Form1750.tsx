@@ -1,6 +1,6 @@
-import { Link, Navigate, useParams } from "react-router-dom";
-import { PacketNav } from "../components/PacketNav";
-import { emptyPackingListRow, packingRowTotal, withPackingList } from "../data/loadPlan";
+import { Link, useParams } from "react-router-dom";
+import { FormSave } from "../components/FormSave";
+import { digitsOnly, emptyPackingListRow, formatSavedAt, packingRowTotal, withPackingList, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, PackingList, PackingListRow } from "../types/loadPlan";
 
@@ -16,10 +16,6 @@ export function Form1750() {
         <Link to="/load-plans">Back to load plans</Link>
       </div>
     );
-  }
-
-  if (!plan.missionNumber.trim()) {
-    return <Navigate to={`/load-plans/${plan.id}`} replace />;
   }
 
   return <PackingListForm plan={plan} saveLoadPlan={saveLoadPlan} />;
@@ -42,21 +38,14 @@ function PackingListForm({
   return (
     <div className="page-wrap">
       <p className="page-kicker">DD Form 1750, SEP 70 · Packing List</p>
-      <h1>
-        {plan.missionNumber}{" "}
-        <span className={`status-tag ${plan.status === "inspected" ? "status-received" : "status-draft"}`}>
-          {plan.status === "inspected" ? "Inspected" : "In progress"}
-        </span>
-      </h1>
-      <PacketNav id={plan.id} />
-
+      <h1>DD Form 1750{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
         <h2 className="worksheet-banner">Packing List</h2>
         <div className="worksheet-row cols-4">
           <HeadField label="Packed by" value={list.packedBy} onChange={(packedBy) => patch({ packedBy })} />
-          <HeadField label="1. No. boxes" value={list.boxCount} onChange={(boxCount) => patch({ boxCount })} />
-          <HeadField label="2a. Requisition no." value={list.requisitionNo} onChange={(requisitionNo) => patch({ requisitionNo })} />
-          <HeadField label="2b. Order no." value={list.orderNo} onChange={(orderNo) => patch({ orderNo })} />
+          <HeadField label="1. No. boxes" numeric value={list.boxCount} onChange={(boxCount) => patch({ boxCount })} />
+          <HeadField label="2a. Requisition no." numeric value={list.requisitionNo} onChange={(requisitionNo) => patch({ requisitionNo })} />
+          <HeadField label="2b. Order no." numeric value={list.orderNo} onChange={(orderNo) => patch({ orderNo })} />
         </div>
         <div className="worksheet-row cols-2">
           <HeadField label="3. End item" value={list.endItem} onChange={(endItem) => patch({ endItem })} />
@@ -66,9 +55,9 @@ function PackingListForm({
 
       <div className="section-card worksheet-sheet sheet-frame">
         {list.rows.map((row) => (
-          <div className="cargo-block" key={row.id}>
+          <div className="sheet-block" key={row.id}>
             <div className="cargo-row pack-row-item">
-              <PackField id={`${row.id}-box`} label="5a. Box no." value={row.boxNo} onChange={(boxNo) => updateRow(row.id, { boxNo })} />
+              <PackField id={`${row.id}-box`} label="5a. Box no." numeric value={row.boxNo} onChange={(boxNo) => updateRow(row.id, { boxNo })} />
               <PackField
                 id={`${row.id}-contents`}
                 label="5b. Contents"
@@ -115,7 +104,7 @@ function PackingListForm({
 
       <div className="section-card worksheet-sheet sheet-frame">
         <p className="worksheet-prose">This certifies that the items listed hereon are within the specified boxes.</p>
-        <div className="cargo-block">
+        <div className="sheet-block">
           <div className="cargo-row pack-row-cert">
             <PackField id="1750-name" label="6. Typed name and title" value={list.typedName} onChange={(typedName) => patch({ typedName })} />
             <PackField id="1750-signature" label="Signature" value={list.signature} onChange={(signature) => patch({ signature })} />
@@ -190,6 +179,8 @@ function PackingListForm({
           </p>
         </div>
       </div>
+
+      <FormSave onSave={() => saveLoadPlan(withSavedForm({ ...plan, packingList: list }, "DD Form 1750", "packing-list"))} />
     </div>
   );
 }
@@ -199,11 +190,13 @@ function HeadField({
   value,
   onChange,
   type = "text",
+  numeric = false,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   type?: string;
+  numeric?: boolean;
 }) {
   const id = `1750-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
@@ -211,7 +204,15 @@ function HeadField({
       <label className="worksheet-label" htmlFor={id}>
         {label}
       </label>
-      <input id={id} className="usa-input" type={type} value={value} onChange={(event) => onChange(event.target.value)} />
+      <input
+        id={id}
+        className="usa-input"
+        type={type}
+        inputMode={numeric ? "numeric" : undefined}
+        pattern={numeric ? "[0-9]*" : undefined}
+        value={value}
+        onChange={(event) => onChange(numeric ? digitsOnly(event.target.value) : event.target.value)}
+      />
     </div>
   );
 }
@@ -223,6 +224,7 @@ function PackField({
   value,
   onChange,
   readOnly = false,
+  numeric = false,
 }: {
   id: string;
   label: string;
@@ -230,6 +232,7 @@ function PackField({
   value: string;
   onChange?: (value: string) => void;
   readOnly?: boolean;
+  numeric?: boolean;
 }) {
   return (
     <div className={`cargo-field${readOnly ? " pack-total" : ""}`}>
@@ -241,9 +244,11 @@ function PackField({
         id={id}
         className="usa-input"
         aria-label={note ? `${label} ${note}` : label}
+        inputMode={numeric ? "numeric" : undefined}
+        pattern={numeric ? "[0-9]*" : undefined}
         value={value}
         readOnly={readOnly}
-        onChange={readOnly ? undefined : (event) => onChange?.(event.target.value)}
+        onChange={readOnly ? undefined : (event) => onChange?.(numeric ? digitsOnly(event.target.value) : event.target.value)}
       />
     </div>
   );

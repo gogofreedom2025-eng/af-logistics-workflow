@@ -1,10 +1,12 @@
-import { Link, Navigate, useParams } from "react-router-dom";
-import { PacketNav, StepContinue } from "../components/PacketNav";
-import { emptyInspectionColumn, withInspection } from "../data/loadPlan";
+import { Link, useParams } from "react-router-dom";
+import { FormSave } from "../components/FormSave";
+import { emptyInspectionColumn, formatSavedAt, withInspection, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, InspectionColumn, InspectionMark, JointInspection } from "../types/loadPlan";
 
-const LINES: { id: string; label: string; note?: string; section?: boolean }[] = [
+type ChecklistLine = { id: string; label: string; note?: string; section?: boolean; ownRow?: string };
+
+const LINES: ChecklistLine[] = [
   { id: "11", label: "11. Documentation", section: true },
   { id: "11a", label: "a. Pre-Load Plan" },
   { id: "11b", label: "b. Manifest/ Load List/Packing List" },
@@ -26,9 +28,9 @@ const LINES: { id: string; label: string; note?: string; section?: boolean }[] =
   { id: "13b", label: "b. Brakes Operational", note: "(Service/Emergency)" },
   { id: "13c", label: "c. Battery", note: "(Secured, Terminals Protected, No Leaks)" },
   { id: "13d", label: "d. Fuel Tank(s), Level, Caps" },
-  { id: "13e", label: "e. Jerricans", note: "(Secure, Fuel Level, Seal)" },
-  { id: "13e1", label: "(1) DOT 5L (Metal) MUST BE EMPTY" },
-  { id: "13e2", label: "(2) UN Specification (Plastic)" },
+  { id: "13e", label: "e. Jerricans", note: "(Secure, Fuel Level, Seal)", ownRow: "jerricans" },
+  { id: "13e1", label: "e(1) DOT 5L (Metal) MUST BE EMPTY", ownRow: "jerricans" },
+  { id: "13e2", label: "e(2) UN Specification (Plastic)", ownRow: "jerricans" },
   { id: "13f", label: "f. Tiedown Points/Clevises", note: "(Serviceable)" },
   { id: "13g", label: "g. Pintle Hooks", note: "(If Used)" },
   { id: "13h", label: "h. Vehicle Equipment Secured" },
@@ -47,6 +49,37 @@ const LINES: { id: string; label: string; note?: string; section?: boolean }[] =
   { id: "15e", label: "e. Accompanying Load", note: "(w/in Rated Capacity and Secured)" },
 ];
 
+function itemRows(items: ChecklistLine[]): ChecklistLine[][] {
+  const rows: ChecklistLine[][] = [];
+  let current: ChecklistLine[] = [];
+  const flush = () => {
+    if (current.length) rows.push(current);
+    current = [];
+  };
+  for (const line of items) {
+    if (line.ownRow) {
+      flush();
+      const last = rows[rows.length - 1];
+      if (last?.[0]?.ownRow === line.ownRow) last.push(line);
+      else rows.push([line]);
+      continue;
+    }
+    current.push(line);
+    if (current.length === 3) flush();
+  }
+  flush();
+  return rows;
+}
+
+function checklistGroups(): { section: ChecklistLine; items: ChecklistLine[] }[] {
+  const groups: { section: ChecklistLine; items: ChecklistLine[] }[] = [];
+  for (const line of LINES) {
+    if (line.section) groups.push({ section: line, items: [] });
+    else groups[groups.length - 1]?.items.push(line);
+  }
+  return groups;
+}
+
 export function Form2133() {
   const { id } = useParams();
   const { getLoadPlan, saveLoadPlan } = useStore();
@@ -59,10 +92,6 @@ export function Form2133() {
         <Link to="/load-plans">Back to load plans</Link>
       </div>
     );
-  }
-
-  if (!plan.missionNumber.trim()) {
-    return <Navigate to={`/load-plans/${plan.id}`} replace />;
   }
 
   return <InspectionForm plan={plan} saveLoadPlan={saveLoadPlan} />;
@@ -91,14 +120,7 @@ function InspectionForm({
   return (
     <div className="page-wrap">
       <p className="page-kicker">DD Form 2133 · Joint Airlift Inspection Record/Checklist</p>
-      <h1>
-        {plan.missionNumber}{" "}
-        <span className={`status-tag ${plan.status === "inspected" ? "status-received" : "status-draft"}`}>
-          {plan.status === "inspected" ? "Inspected" : "In progress"}
-        </span>
-      </h1>
-      <PacketNav id={plan.id} />
-
+      <h1>DD Form 2133{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
         <h2 className="worksheet-banner">
           Joint Airlift Inspection Record/Checklist
@@ -136,65 +158,60 @@ function InspectionForm({
       </div>
 
       <div className="section-card worksheet-sheet sheet-frame">
-        <div className="inspect-scroll">
-          <table className="inspect-table">
-            <caption className="usa-sr-only">Joint airlift inspection checklist</caption>
-            <thead>
-              <tr>
-                <th scope="col">Checklist</th>
-                {form.columns.map((column, index) => (
-                  <th key={column.id} scope="col">
-                    <label className="worksheet-label" htmlFor={`${column.id}-identity`}>
-                      10. Increment/serial/bumper number and type/TCN
-                    </label>
-                    <input
-                      id={`${column.id}-identity`}
-                      className="usa-input"
-                      value={column.identity}
-                      aria-label={`Increment ${index + 1}`}
-                      onChange={(event) => updateColumn(column.id, { identity: event.target.value })}
-                    />
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {LINES.map((line) =>
-                line.section ? (
-                  <tr key={line.id} className="inspect-section">
-                    <th scope="row" colSpan={form.columns.length + 1}>
-                      {line.label}
-                      {line.note ? <span className="worksheet-unit"> {line.note}</span> : null}
-                    </th>
-                  </tr>
-                ) : (
-                  <tr key={line.id}>
-                    <th scope="row">
-                      {line.label}
-                      {line.note ? <span className="worksheet-unit"> {line.note}</span> : null}
-                    </th>
-                    {form.columns.map((column) => (
-                      <td key={column.id}>
-                        <select
-                          className="usa-select"
-                          aria-label={`${line.label} for ${column.identity || "this increment"}`}
-                          value={column.marks[line.id] ?? ""}
-                          onChange={(event) => setMark(column.id, line.id, event.target.value as InspectionMark)}
-                        >
-                          <option value=""> </option>
-                          <option value="sat">Satisfactory</option>
-                          <option value="unsat">Unsatisfactory</option>
-                          <option value="corrected">Corrected</option>
-                          <option value="na">Not applicable</option>
-                        </select>
-                      </td>
-                    ))}
-                  </tr>
-                ),
-              )}
-            </tbody>
-          </table>
+        <div className="inspect-increments">
+          {form.columns.map((column, index) => (
+            <div className="inspect-increment" key={column.id}>
+              <label className="worksheet-label" htmlFor={`${column.id}-identity`}>
+                10. Increment/serial/bumper number and type/TCN
+              </label>
+              <input
+                id={`${column.id}-identity`}
+                className="usa-input"
+                value={column.identity}
+                aria-label={`Increment ${index + 1}`}
+                onChange={(event) => updateColumn(column.id, { identity: event.target.value })}
+              />
+            </div>
+          ))}
         </div>
+        {checklistGroups().map((group) => (
+          <section key={group.section.id}>
+            <h3 className="inspect-section">
+              {group.section.label}
+              {group.section.note ? <span className="worksheet-unit"> {group.section.note}</span> : null}
+            </h3>
+            {itemRows(group.items).map((row) => (
+              <div className="inspect-items" key={row.map((line) => line.id).join("-")}>
+                {row.map((line) => (
+                  <div className="inspect-item" key={line.id}>
+                    <div className="inspect-item-label">
+                      {line.label}
+                      {line.note ? <span className="worksheet-unit"> {line.note}</span> : null}
+                    </div>
+                    {form.columns.map((column, index) => (
+                      <select
+                        key={column.id}
+                        className="usa-select"
+                        aria-label={`${line.label} for ${column.identity || `increment ${index + 1}`}`}
+                        value={column.marks[line.id] ?? ""}
+                        onChange={(event) => setMark(column.id, line.id, event.target.value as InspectionMark)}
+                      >
+                        <option value=""> </option>
+                        <option value="sat">Satisfactory</option>
+                        <option value="unsat">Unsatisfactory</option>
+                        <option value="corrected">Corrected</option>
+                        <option value="na">Not applicable</option>
+                      </select>
+                    ))}
+                  </div>
+                ))}
+                {Array.from({ length: (3 - (row.length % 3)) % 3 }, (_, index) => (
+                  <div className="inspect-item inspect-item-pad" key={`${row[0].id}-pad-${index}`} />
+                ))}
+              </div>
+            ))}
+          </section>
+        ))}
         <div className="actions-row">
           <button
             type="button"
@@ -216,37 +233,39 @@ function InspectionForm({
       </div>
 
       <div className="section-card worksheet-sheet sheet-frame">
-        <p className="worksheet-prose">
-          I certify that all items, including hazards, have been declared, properly prepared, and presented for
-          airlift in accordance with all applicable directives.
-        </p>
-        <div className="cargo-block">
-          <div className="cargo-row cargo-row-full">
-            <CertField
-              id="2133-deploying-rep"
-              label="16. Deploying force representative"
-              note="(Print Name/Rank/Signature)"
-              value={form.deployingRep}
-              onChange={(deployingRep) => patch({ deployingRep })}
-            />
+        <div className="sheet-block">
+          <div className="inspect-sign-row">
+            <div>
+              <p className="worksheet-prose">
+                I certify that all items, including hazards, have been declared, properly prepared, and presented for
+                airlift in accordance with all applicable directives.
+              </p>
+              <div className="cargo-row cargo-row-full">
+                <CertField
+                  id="2133-deploying-rep"
+                  label="16. Deploying force representative"
+                  note="(Print Name/Rank/Signature)"
+                  value={form.deployingRep}
+                  onChange={(deployingRep) => patch({ deployingRep })}
+                />
+              </div>
+            </div>
+            <div>
+              <p className="worksheet-prose">
+                I certify the above declared items have been inspected and properly prepared for airlift in accordance
+                with all applicable directives.
+              </p>
+              <div className="cargo-row cargo-row-full">
+                <CertField
+                  id="2133-inspector"
+                  label="17. Mobility force inspector"
+                  note="(Print Name/Rank/Signature)"
+                  value={form.mobilityInspector}
+                  onChange={(mobilityInspector) => patch({ mobilityInspector })}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-        <p className="worksheet-prose">
-          I certify the above declared items have been inspected and properly prepared for airlift in accordance
-          with all applicable directives.
-        </p>
-        <div className="cargo-block">
-          <div className="cargo-row cargo-row-full">
-            <CertField
-              id="2133-inspector"
-              label="17. Mobility force inspector"
-              note="(Print Name/Rank/Signature)"
-              value={form.mobilityInspector}
-              onChange={(mobilityInspector) => patch({ mobilityInspector })}
-            />
-          </div>
-        </div>
-        <div className="cargo-block">
           <div className="cargo-row cargo-row-full">
             <CertField
               id="2133-additional"
@@ -259,7 +278,7 @@ function InspectionForm({
         </div>
       </div>
 
-      <StepContinue id={plan.id} slug="joint-airlift-inspection" />
+      <FormSave onSave={() => saveLoadPlan(withSavedForm({ ...plan, inspection: form }, "DD Form 2133", "joint-airlift-inspection"))} />
     </div>
   );
 }

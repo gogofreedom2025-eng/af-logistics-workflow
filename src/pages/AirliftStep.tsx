@@ -1,5 +1,4 @@
 import { Link, Navigate, useParams } from "react-router-dom";
-import { PacketNav, StepContinue } from "../components/PacketNav";
 import { useStore } from "../store/Store";
 import { PACKET_STEPS } from "../types/loadPlan";
 
@@ -18,7 +17,7 @@ export function AirliftStep() {
     );
   }
 
-  if (!current || current.slug === "" || !plan.missionNumber.trim()) {
+  if (!current || current.slug === "") {
     return <Navigate to={`/load-plans/${plan.id}`} replace />;
   }
 
@@ -26,7 +25,6 @@ export function AirliftStep() {
     <div className="page-wrap">
       <p className="page-kicker">{current.title}</p>
       <h1>{current.short}</h1>
-      <PacketNav id={plan.id} />
       <div className="section-card">
         <h2>Coming soon</h2>
         {current.slug === "cargo-manifests" && (
@@ -35,7 +33,6 @@ export function AirliftStep() {
           </p>
         )}
       </div>
-      <StepContinue id={plan.id} slug={current.slug} />
     </div>
   );
 }
