@@ -518,12 +518,24 @@ body,
   margin-bottom: 0;
 }
 
+.worksheet-row.loadout-ab {
+  grid-template-columns: minmax(12rem, 0.8fr) minmax(0, 2fr);
+}
+
+.loadout-line {
+  border-top: 1px solid #1b1b1b;
+}
+
 .aircraft-remarks p {
   margin: 0 0 0.2rem;
 }
 
 .aircraft-remarks p:last-child {
   margin-bottom: 0;
+}
+
+.aircraft-remarks p.aircraft-remark-sub {
+  margin-left: 1.5rem;
 }
 
 .label-consignee {
@@ -578,6 +590,19 @@ body,
 
 .worksheet-grid .worksheet-row + .worksheet-row {
   border-top: 1px solid #1b1b1b;
+}
+
+.load-summary {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.load-seats {
+  border-bottom: 1px solid #1b1b1b;
+}
+
+.load-back {
+  border-bottom: 1px solid #1b1b1b;
 }
 
 .worksheet-cell {
@@ -969,7 +994,8 @@ body,
   .worksheet-row.cols-5,
   .worksheet-row.pallet-lower,
   .worksheet-row.label-lower,
-  .worksheet-row.label-top {
+  .worksheet-row.label-top,
+  .worksheet-row.loadout-ab {
     grid-template-columns: 1fr;
   }
 

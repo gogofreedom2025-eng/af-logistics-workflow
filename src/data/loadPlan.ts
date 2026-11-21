@@ -442,6 +442,8 @@ export function emptyAircraftLoadLine(): AircraftLoadLine {
     sequence: "",
     nomenclature: "",
     tcn: "",
+    vehiclePackage: "",
+    increment: "",
     remarksCode: "",
     otherRemarks: "",
     length: "",
@@ -461,6 +463,8 @@ function fillAircraftLoadLine(row?: Partial<AircraftLoadLine>): AircraftLoadLine
     sequence: "",
     nomenclature: "",
     tcn: "",
+    vehiclePackage: "",
+    increment: "",
     remarksCode: "",
     otherRemarks: "",
     length: "",
@@ -483,8 +487,6 @@ export function emptyAircraftLoadPlan(): AircraftLoadPlan {
     movementPlan: "",
     movementDate: "",
     loadNumber: "",
-    page: "",
-    pages: "",
     missionNumber: "",
     aircraftSerial: "",
     configuration: "",
@@ -515,9 +517,11 @@ export function emptyAircraftLoadPlan(): AircraftLoadPlan {
 export function withAircraftLoadPlan(value: AircraftLoadPlan | undefined): AircraftLoadPlan {
   const base = emptyAircraftLoadPlan();
   if (!value) return base;
+  const stored = value as AircraftLoadPlan & { page?: string; pages?: string };
+  const { page: _page, pages: _pages, ...rest } = stored;
   return {
     ...base,
-    ...value,
+    ...rest,
     lines: value.lines?.length ? value.lines.map((line) => fillAircraftLoadLine(line)) : base.lines,
   };
 }

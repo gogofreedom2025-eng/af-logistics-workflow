@@ -263,6 +263,8 @@ export interface AircraftLoadLine {
   sequence: string;
   nomenclature: string;
   tcn: string;
+  vehiclePackage: string;
+  increment: string;
   remarksCode: string;
   otherRemarks: string;
   length: string;
@@ -282,8 +284,6 @@ export interface AircraftLoadPlan {
   movementPlan: string;
   movementDate: string;
   loadNumber: string;
-  page: string;
-  pages: string;
   missionNumber: string;
   aircraftSerial: string;
   configuration: string;
