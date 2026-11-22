@@ -426,6 +426,10 @@ body,
   border-bottom: 1px solid #1b1b1b;
 }
 
+.sheet-frame > .worksheet-banner:last-child {
+  border-bottom: none;
+}
+
 .worksheet-banner-note {
   display: block;
   margin-top: 0.2rem;
@@ -641,6 +645,126 @@ body,
   font-weight: 600;
 }
 
+.save-button,
+.stepper-save .submit-button,
+.stepper-add,
+.stepper-remove,
+.stepper-nav-button {
+  min-width: 6.5rem;
+  padding: 0.55rem 1.35rem;
+  border: 0;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: none;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.stepper-add {
+  background-color: #00a0f0;
+}
+
+.stepper-add:hover,
+.stepper-add:focus {
+  background-color: #0088d0;
+  color: #fff;
+}
+
+.stepper-remove {
+  background-color: #dc2626;
+}
+
+.stepper-remove:hover,
+.stepper-remove:focus {
+  background-color: #b91c1c;
+  color: #fff;
+}
+
+.save-button {
+  background-color: #010d27;
+}
+
+.save-button:hover,
+.save-button:focus {
+  background-color: #16315c;
+  color: #fff;
+}
+
+.save-button:disabled {
+  background-color: #010d27;
+  color: #fff;
+  opacity: 0.45;
+}
+
+.stepper-save .submit-button {
+  background-color: var(--unclass);
+}
+
+.stepper-save .submit-button:hover:not(:disabled),
+.stepper-save .submit-button:focus:not(:disabled) {
+  background-color: #085422;
+  color: #fff;
+}
+
+.stepper-save .submit-button:disabled {
+  background-color: #8fbfa3;
+  color: #fff;
+  opacity: 1;
+}
+
+.stepper-previous {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+.stepper-previous:hover:not(:disabled),
+.stepper-previous:focus:not(:disabled) {
+  background-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.stepper-previous:disabled {
+  background-color: #e2e8f0;
+  color: #334155;
+  opacity: 0.45;
+}
+
+.stepper-next {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+.stepper-next:hover:not(:disabled),
+.stepper-next:focus:not(:disabled) {
+  background-color: #1d4ed8;
+  color: #fff;
+}
+
+.stepper-next:disabled {
+  background-color: #2563eb;
+  color: #fff;
+  opacity: 0.45;
+}
+
+.stepper-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stepper-footer .stepper-save {
+  flex: 1;
+}
+
+.stepper-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  margin-left: auto;
+}
+
 .worksheet-unit {
   font-style: italic;
   font-weight: 400;
@@ -703,6 +827,35 @@ body,
 .worksheet-sheet .actions-row {
   margin-top: 0;
   padding: 0.75rem 1rem 1rem;
+}
+
+.stepper-row-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stepper-row-actions .actions-row {
+  grid-column: 1;
+  margin-top: 0;
+}
+
+.stepper-note {
+  grid-column: 2;
+  justify-self: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: center;
+}
+
+.stepper-note span + span {
+  margin-left: 1rem;
 }
 
 .cargo-row-id {
@@ -910,8 +1063,15 @@ body,
   .pack-row-qty,
   .pack-row-cert,
   .inspect-items,
-  .inspect-sign-row {
+  .inspect-sign-row,
+  .stepper-row-actions {
     grid-template-columns: 1fr;
+  }
+
+  .stepper-note {
+    grid-column: 1;
+    justify-self: start;
+    text-align: left;
   }
 
   .inspect-item,
@@ -1015,6 +1175,233 @@ body,
   flex-wrap: wrap;
   align-items: center;
   margin-top: 1rem;
+}
+
+.mission-card {
+  margin-bottom: 1rem;
+  padding: 1.25rem 1.35rem 1.4rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.mission-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.mission-icon {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.7rem;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.mission-icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  fill: currentColor;
+}
+
+.mission-head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.mission-head p {
+  margin: 0.15rem 0 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.mission-grid {
+  display: grid;
+  gap: 1rem 1.15rem;
+}
+
+.mission-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mission-grid-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.mission-card .worksheet-cell {
+  padding: 0;
+  border: 0;
+}
+
+.mission-card .worksheet-label {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.mission-card .usa-input {
+  width: 100%;
+  max-width: none;
+  margin-top: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.45rem;
+}
+
+.mission-row + .mission-row {
+  margin-top: 0.85rem;
+}
+
+.mission-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.mission-card .cargo-field,
+.mission-card .worksheet-cell {
+  border-right-color: #e2e8f0;
+}
+
+.mission-card .plan-row-measures,
+.mission-card .worksheet-grid .worksheet-row + .worksheet-row,
+.mission-card .worksheet-row.cols-5 {
+  border-top-color: #e2e8f0;
+}
+
+.mission-fields {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.mission-card .mission-fields .worksheet-row {
+  gap: 1rem;
+}
+
+.mission-card .mission-fields .worksheet-cell {
+  padding: 0;
+  border: 0;
+}
+
+.mission-card .mission-fields .worksheet-row + .worksheet-row {
+  border-top: 0;
+}
+
+@media (max-width: 48rem) {
+  .mission-grid-4,
+  .mission-grid-5 {
+    grid-template-columns: 1fr;
+  }
+}
+.stepper-section {
+  margin-top: 2.5rem;
+  padding: 1.35rem 0.75rem 1.15rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  background: #fff;
+}
+
+.stepper-section .stepper-track {
+  margin: 0;
+}
+
+.stepper-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  list-style: none;
+  margin: 1.25rem 0;
+  padding: 0;
+}
+
+.stepper-track li {
+  margin: 0;
+  padding: 0;
+}
+
+.stepper-step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.stepper-dot {
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stepper-check {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.stepper-step.is-done .stepper-dot {
+  border-color: #010d27;
+  background: #010d27;
+  color: #fff;
+}
+
+.stepper-step.is-current .stepper-dot {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.stepper-name {
+  max-width: 100%;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.stepper-step.is-done .stepper-name {
+  color: #1e293b;
+}
+
+.stepper-step.is-current .stepper-name {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.stepper-step:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
+
+@media (max-width: 48rem) {
+  .stepper-name {
+    font-size: 0.62rem;
+  }
 }
 
 .queue-table a {

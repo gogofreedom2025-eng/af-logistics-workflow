@@ -461,6 +461,7 @@ export interface PacketStep {
 
 export const PACKET_STEPS: PacketStep[] = [
   { slug: "", title: "AF Form 4080", short: "Load plan", built: true },
+  { slug: "4080-stepper", title: "AF Form 4080 stepper", short: "Step by step", built: true },
   { slug: "cargo-manifests", title: "DD Form 1385", short: "Cargo Manifests", built: true },
   { slug: "joint-airlift-inspection", title: "DD Form 2133", short: "Joint Airlift Inspection", built: true },
   { slug: "air-passenger-cargo-request", title: "DD Form 2768", short: "Military Air Passenger/Cargo Request", built: true },

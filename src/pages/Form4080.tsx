@@ -130,7 +130,7 @@ export function Form4080() {
             <div className="cargo-row plan-row-measures">
               <PlanField id={`${row.id}-weight`} label="Gross weight" type="number" value={row.grossWeight ? String(row.grossWeight) : ""} onChange={(value) => updateWide(row.id, { grossWeight: Number(value) || 0 })} />
               <PlanField id={`${row.id}-moment`} label="Moments" type="number" value={row.moment ? String(row.moment) : ""} onChange={(value) => updateWide(row.id, { moment: Number(value) || 0 })} />
-              <PlanField id={`${row.id}-special`} label="Special handling" checked={row.specialHandling} onCheck={(specialHandling) => updateWide(row.id, { specialHandling })} check />
+              <PlanField id={`${row.id}-special`} label="Special edition" checked={row.specialHandling} onCheck={(specialHandling) => updateWide(row.id, { specialHandling })} check />
             </div>
           </div>
         ))}
@@ -152,7 +152,7 @@ export function Form4080() {
               <PlanField id={`${row.id}-dest`} label="Destination" value={row.destination} onChange={(destination) => updateNarrow(row.id, { destination })} />
               <PlanField id={`${row.id}-weight`} label="Weight" type="number" value={row.weight ? String(row.weight) : ""} onChange={(value) => updateNarrow(row.id, { weight: Number(value) || 0 })} />
               <PlanField id={`${row.id}-cube`} label="Cube" type="number" value={row.cube ? String(row.cube) : ""} onChange={(value) => updateNarrow(row.id, { cube: Number(value) || 0 })} />
-              <PlanField id={`${row.id}-special`} label="Special handling" checked={row.specialHandling} onCheck={(specialHandling) => updateNarrow(row.id, { specialHandling })} check />
+              <PlanField id={`${row.id}-special`} label="Special edition" checked={row.specialHandling} onCheck={(specialHandling) => updateNarrow(row.id, { specialHandling })} check />
             </div>
           </div>
         ))}
