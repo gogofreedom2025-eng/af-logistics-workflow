@@ -6,13 +6,13 @@ import { useStore } from "../store/Store";
 import type { AirliftPacket, BellyNarrowRow, BellyWideRow, LoadSequenceRow } from "../types/loadPlan";
 
 const STEPS = [
-  { short: "Mission details", title: "Load/Sequence Breakdown Worksheet" },
-  { short: "Planned load distribution", title: "A. Planned load distribution" },
-  { short: "Belly compartment", title: "B. Belly compartment (747 / DC 10 / MD 11)" },
-  { short: "Belly compartment", title: "C. Belly compartment (DC 8 / 707)" },
-  { short: "Weight/moment data", title: "D. Weight/moment data" },
-  { short: "Zero fuel", title: "E. Zero fuel data" },
-  { short: "Load planned by / Loaded by", title: "Load planned by and Loaded by" },
+  { short: "Mission Details", title: "Load/Sequence Breakdown Worksheet" },
+  { short: "Planned Load Distribution", title: "A. Planned load distribution" },
+  { short: "Belly Compartment (Fwd)", title: "B. Belly compartment (747 / DC 10 / MD 11)" },
+  { short: "Belly Compartment (Aft)", title: "C. Belly compartment (DC 8 / 707)" },
+  { short: "Weight / Moment Data", title: "D. Weight/moment data" },
+  { short: "Zero Fuel", title: "E. Zero fuel data" },
+  { short: "Load Planned By / Loaded By", title: "Load planned by and Loaded by" },
 ];
 
 export function Form4080Stepper() {
@@ -51,9 +51,15 @@ export function Form4080Stepper() {
 
   return (
     <div className="page-wrap">
-      <p className="page-kicker">AF Form 4080 stepper</p>
-      <h1>Load/Sequence Breakdown Worksheet{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
-      <div className="section-card sheet-frame stepper-section no-print">
+      <div className="stepper-banner">
+        <h1>Load/Sequence Breakdown Worksheet</h1>
+        <svg className="stepper-banner-plane" viewBox="0 0 128 48" aria-hidden="true">
+          <path d="M4 28h34l16-14h8l6 14h36c6 0 12 2 16 6l4 4H2l8-6 6-4z" />
+        </svg>
+        <span className="stepper-banner-badge">AF Form 4080</span>
+      </div>
+      {plan.savedAt ? <p className="stepper-saved">Saved {formatSavedAt(plan.savedAt)}</p> : null}
+      <div className="stepper-section no-print">
         <ol className="stepper-track">
           {STEPS.map((item, index) => (
             <li key={item.title}>
