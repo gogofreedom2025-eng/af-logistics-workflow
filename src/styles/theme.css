@@ -426,6 +426,10 @@ body,
   border-bottom: 1px solid #1b1b1b;
 }
 
+.sheet-frame > .worksheet-banner:last-child {
+  border-bottom: none;
+}
+
 .worksheet-banner-note {
   display: block;
   margin-top: 0.2rem;
@@ -641,6 +645,73 @@ body,
   font-weight: 600;
 }
 
+.save-button,
+.stepper-save .submit-button,
+.stepper-add,
+.stepper-remove {
+  min-width: 6.5rem;
+  padding: 0.55rem 1.35rem;
+  border: 0;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: none;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.stepper-add {
+  background-color: #00a0f0;
+}
+
+.stepper-add:hover,
+.stepper-add:focus {
+  background-color: #0088d0;
+  color: #fff;
+}
+
+.stepper-remove {
+  background-color: #dc2626;
+}
+
+.stepper-remove:hover,
+.stepper-remove:focus {
+  background-color: #b91c1c;
+  color: #fff;
+}
+
+.save-button {
+  background-color: #010d27;
+}
+
+.save-button:hover,
+.save-button:focus {
+  background-color: #16315c;
+  color: #fff;
+}
+
+.save-button:disabled {
+  background-color: #010d27;
+  color: #fff;
+  opacity: 0.45;
+}
+
+.stepper-save .submit-button {
+  background-color: var(--unclass);
+}
+
+.stepper-save .submit-button:hover:not(:disabled),
+.stepper-save .submit-button:focus:not(:disabled) {
+  background-color: #085422;
+  color: #fff;
+}
+
+.stepper-save .submit-button:disabled {
+  background-color: #8fbfa3;
+  color: #fff;
+  opacity: 1;
+}
+
 .worksheet-unit {
   font-style: italic;
   font-weight: 400;
@@ -703,6 +774,32 @@ body,
 .worksheet-sheet .actions-row {
   margin-top: 0;
   padding: 0.75rem 1rem 1rem;
+}
+
+.stepper-row-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.stepper-row-actions .actions-row {
+  grid-column: 1;
+  margin-top: 0;
+}
+
+.stepper-note {
+  grid-column: 2;
+  justify-self: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+
+.stepper-note span + span {
+  margin-left: 1rem;
 }
 
 .cargo-row-id {
@@ -910,8 +1007,15 @@ body,
   .pack-row-qty,
   .pack-row-cert,
   .inspect-items,
-  .inspect-sign-row {
+  .inspect-sign-row,
+  .stepper-row-actions {
     grid-template-columns: 1fr;
+  }
+
+  .stepper-note {
+    grid-column: 1;
+    justify-self: start;
+    text-align: left;
   }
 
   .inspect-item,
@@ -1015,6 +1119,116 @@ body,
   flex-wrap: wrap;
   align-items: center;
   margin-top: 1rem;
+}
+
+.stepper-section {
+  margin-top: 2.5rem;
+  padding: 1rem 0.5rem 0.85rem;
+}
+
+.stepper-section .stepper-track {
+  margin: 0;
+}
+
+.stepper-track {
+  --step-progress: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  list-style: none;
+  margin: 1.25rem 0;
+  padding: 0;
+}
+
+.stepper-track::before,
+.stepper-track::after {
+  content: "";
+  position: absolute;
+  top: 0.72rem;
+  left: calc(100% / 14);
+  height: 4px;
+  border-radius: 999px;
+}
+
+.stepper-track::before {
+  right: calc(100% / 14);
+  background: #c9c9c9;
+}
+
+.stepper-track::after {
+  width: calc((100% - 100% / 7) * var(--step-progress));
+  background: var(--af-blue);
+}
+
+.stepper-track li {
+  margin: 0;
+  padding: 0;
+}
+
+.stepper-step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #3d4551;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.stepper-dot {
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border: 2px solid #71767a;
+  border-radius: 50%;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stepper-step.is-done .stepper-dot,
+.stepper-step.is-current .stepper-dot {
+  border-color: var(--af-blue);
+  background: var(--af-blue);
+  color: #fff;
+}
+
+.stepper-step.is-current .stepper-dot {
+  box-shadow: 0 0 0 4px rgba(0, 48, 143, 0.22);
+}
+
+.stepper-name {
+  max-width: 100%;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stepper-step.is-current .stepper-name,
+.stepper-step:hover .stepper-name,
+.stepper-step:focus-visible .stepper-name {
+  color: var(--af-blue);
+}
+
+.stepper-step:focus-visible {
+  outline: 2px solid var(--af-blue);
+  outline-offset: 3px;
+}
+
+@media (max-width: 48rem) {
+  .stepper-name {
+    font-size: 0.62rem;
+  }
 }
 
 .queue-table a {
