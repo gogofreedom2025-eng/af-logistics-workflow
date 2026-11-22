@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FormSave } from "../components/FormSave";
 import { cargoWeight, emptyBellyNarrow, emptyBellyWide, emptyRow, formatSavedAt, withSavedForm } from "../data/loadPlan";
@@ -54,7 +54,7 @@ export function Form4080Stepper() {
       <p className="page-kicker">AF Form 4080 stepper</p>
       <h1>Load/Sequence Breakdown Worksheet{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
       <div className="section-card sheet-frame stepper-section no-print">
-        <ol className="stepper-track" style={{ "--step-progress": step / (STEPS.length - 1) } as CSSProperties}>
+        <ol className="stepper-track">
           {STEPS.map((item, index) => (
             <li key={item.title}>
               <button
@@ -63,7 +63,15 @@ export function Form4080Stepper() {
                 aria-current={index === step ? "step" : undefined}
                 onClick={() => setStep(index)}
               >
-                <span className="stepper-dot">{index + 1}</span>
+                <span className="stepper-dot">
+                  {index < step ? (
+                    <svg className="stepper-check" viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M3.2 8.2 6.3 11.3 12.8 4.6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    index + 1
+                  )}
+                </span>
                 <span className="stepper-name">{item.short}</span>
               </button>
             </li>
@@ -72,19 +80,18 @@ export function Form4080Stepper() {
       </div>
 
       {step === 0 ? (
-        <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-          <h2 className="worksheet-banner">Mission details</h2>
-          <div className="worksheet-row cols-4">
-            <HeadField label="Type aircraft and number" value={plan.aircraftType} onChange={(aircraftType) => patch({ aircraftType })} />
-            <HeadField label="Mission number" required value={plan.missionNumber} onChange={(missionNumber) => patch({ missionNumber })} />
-            <HeadField label="Departure date" type="date" value={plan.departureDate} onChange={(departureDate) => patch({ departureDate })} />
-            <HeadField label="Departure time" type="time" value={plan.departureTime} onChange={(departureTime) => patch({ departureTime })} />
+        <StepCard title="Mission Details" text="Enter mission and aircraft information." icon={planeIcon}>
+          <div className="mission-grid mission-grid-4">
+            <HeadField label="Type Aircraft and Number" value={plan.aircraftType} onChange={(aircraftType) => patch({ aircraftType })} />
+            <HeadField label="Mission Number" required value={plan.missionNumber} onChange={(missionNumber) => patch({ missionNumber })} />
+            <HeadField label="Departure Date" type="date" value={plan.departureDate} onChange={(departureDate) => patch({ departureDate })} />
+            <HeadField label="Departure Time" type="time" value={plan.departureTime} onChange={(departureTime) => patch({ departureTime })} />
           </div>
-          <div className="worksheet-row cols-5">
-            <HeadField label="Mission routing" value={plan.missionRouting} onChange={(missionRouting) => patch({ missionRouting })} />
-            <HeadField label="ACL offered" value={plan.aclOffered} onChange={(aclOffered) => patch({ aclOffered })} />
+          <div className="mission-grid mission-grid-5">
+            <HeadField label="Mission Routing" value={plan.missionRouting} onChange={(missionRouting) => patch({ missionRouting })} />
+            <HeadField label="ACL Offered" value={plan.aclOffered} onChange={(aclOffered) => patch({ aclOffered })} />
             <div className="worksheet-cell">
-              <span className="worksheet-label">Pallet positions available/used</span>
+              <span className="worksheet-label">Pallet Positions Available / Used</span>
               <div className="worksheet-split">
                 <input
                   className="usa-input"
@@ -102,17 +109,16 @@ export function Form4080Stepper() {
                 />
               </div>
             </div>
-            <HeadField label="Loose cargo/mail" value={plan.looseCargoMail} onChange={(looseCargoMail) => patch({ looseCargoMail })} />
+            <HeadField label="Loose Cargo/Mail" value={plan.looseCargoMail} onChange={(looseCargoMail) => patch({ looseCargoMail })} />
             <HeadField label="Configuration" value={plan.configuration} onChange={(configuration) => patch({ configuration })} />
           </div>
-        </div>
+        </StepCard>
       ) : null}
 
       {step === 1 ? (
-        <>
-          {plan.rows.map((row, index) => (
-            <div className="section-card worksheet-sheet sheet-frame" key={row.id}>
-              {index === 0 ? <h2 className="worksheet-banner">A. Planned load distribution</h2> : null}
+        <StepCard title="Planned Load Distribution" text="Enter each planned pallet." icon={palletIcon}>
+          {plan.rows.map((row) => (
+            <div className="mission-row" key={row.id}>
               <div className="cargo-row plan-row-load">
                 <PlanField id={`${row.id}-station`} label="Station" value={row.station || ""} onChange={(station) => updateRow(row.id, { station })} />
                 <PlanField id={`${row.id}-position`} label="Pallet position" value={row.position} onChange={(position) => updateRow(row.id, { position })} />
@@ -145,14 +151,13 @@ export function Form4080Stepper() {
                 </>
               }
             />
-          </>
+        </StepCard>
       ) : null}
 
       {step === 2 ? (
-        <>
-          {bellyWide.map((row, index) => (
-            <div className="section-card worksheet-sheet sheet-frame" key={row.id}>
-              {index === 0 ? <h2 className="worksheet-banner">B. Belly compartment (747 / DC 10 / MD 11)</h2> : null}
+        <StepCard title="Belly Compartment" text="747, DC 10, and MD 11 positions." icon={bellyIcon}>
+          {bellyWide.map((row) => (
+            <div className="mission-row" key={row.id}>
               <div className="cargo-row plan-row-belly">
                 <PlanField id={`${row.id}-position`} label="Position" value={row.position} onChange={(position) => updateWide(row.id, { position })} />
                 <PlanField id={`${row.id}-id`} label="Identification" value={row.identification} onChange={(identification) => updateWide(row.id, { identification })} />
@@ -173,14 +178,13 @@ export function Form4080Stepper() {
               onAdd={() => patch({ bellyWide: [...bellyWide, emptyBellyWide()] })}
               onRemove={() => patch({ bellyWide: bellyWide.slice(0, -1) })}
             />
-          </>
+        </StepCard>
       ) : null}
 
       {step === 3 ? (
-        <>
-          {bellyNarrow.map((row, index) => (
-            <div className="section-card worksheet-sheet sheet-frame" key={row.id}>
-              {index === 0 ? <h2 className="worksheet-banner">C. Belly compartment (DC 8 / 707)</h2> : null}
+        <StepCard title="Belly Compartment" text="DC 8 and 707 items." icon={bellyIcon}>
+          {bellyNarrow.map((row) => (
+            <div className="mission-row" key={row.id}>
               <div className="cargo-row plan-row-narrow">
                 <PlanField id={`${row.id}-location`} label="Location" value={row.location} onChange={(location) => updateNarrow(row.id, { location })} />
                 <PlanField id={`${row.id}-dest`} label="Destination" value={row.destination} onChange={(destination) => updateNarrow(row.id, { destination })} />
@@ -197,12 +201,12 @@ export function Form4080Stepper() {
               onAdd={() => patch({ bellyNarrow: [...bellyNarrow, emptyBellyNarrow()] })}
               onRemove={() => patch({ bellyNarrow: bellyNarrow.slice(0, -1) })}
             />
-          </>
+        </StepCard>
       ) : null}
 
       {step === 4 ? (
-        <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-          <h2 className="worksheet-banner">D. Weight/moment data</h2>
+        <StepCard title="Weight/Moment Data" text="Enter operating, cargo, and zero fuel weight." icon={weightIcon}>
+          <div className="worksheet-grid mission-fields">
           <div className="worksheet-row cols-3">
             <div className="worksheet-cell">
               <span className="worksheet-label">Identification</span>
@@ -227,21 +231,24 @@ export function Form4080Stepper() {
             <HeadField id="step-zero-weight" label="Weight" type="number" value={plan.zeroFuelWeight ? String(plan.zeroFuelWeight) : ""} onChange={(value) => patch({ zeroFuelWeight: Number(value) || 0 })} />
             <HeadField id="step-zero-moment" label="Moments" type="number" value={plan.zeroFuelMoment ? String(plan.zeroFuelMoment) : ""} onChange={(value) => patch({ zeroFuelMoment: Number(value) || 0 })} />
           </div>
-        </div>
+          </div>
+        </StepCard>
       ) : null}
 
       {step === 5 ? (
-        <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-          <h2 className="worksheet-banner">E. Zero fuel data</h2>
+        <StepCard title="Zero Fuel Data" text="Enter percent of M.A.C. and the center of balance." icon={fuelIcon}>
+          <div className="worksheet-grid mission-fields">
           <div className="worksheet-row cols-2">
             <HeadField label="Percent of M.A.C." value={plan.percentMac || ""} onChange={(percentMac) => patch({ percentMac })} />
             <HeadField label="Center of balance station" value={plan.centerOfBalanceStation || ""} onChange={(centerOfBalanceStation) => patch({ centerOfBalanceStation })} />
           </div>
-        </div>
+          </div>
+        </StepCard>
       ) : null}
 
       {step === 6 ? (
-        <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
+        <StepCard title="Load Planned By / Loaded By" text="Enter who planned the load and who loaded the aircraft." icon={crewIcon}>
+          <div className="worksheet-grid mission-fields">
           <div className="worksheet-row cols-2">
             <div className="worksheet-cell">
               <span className="worksheet-label">II. Load planned by</span>
@@ -289,23 +296,87 @@ export function Form4080Stepper() {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </StepCard>
       ) : null}
 
-      <FormSave
-        className="stepper-save"
-        hint="Complete all required fields to submit."
-        submitDisabled={!plan.missionNumber.trim()}
-        onSave={() => saveLoadPlan(withSavedForm(plan, "AF Form 4080 stepper", "4080-stepper"))}
-        onSubmit={
-          step === STEPS.length - 1
-            ? () => saveLoadPlan(withSavedForm(plan, "AF Form 4080 stepper", "4080-stepper"))
-            : undefined
-        }
-      />
+      <div className="stepper-footer">
+        <FormSave
+          className="stepper-save"
+          hint="Complete all required fields to submit."
+          submitDisabled={!plan.missionNumber.trim()}
+          onSave={() => saveLoadPlan(withSavedForm(plan, "AF Form 4080 stepper", "4080-stepper"))}
+          onSubmit={
+            step === STEPS.length - 1
+              ? () => saveLoadPlan(withSavedForm(plan, "AF Form 4080 stepper", "4080-stepper"))
+              : undefined
+          }
+        />
+        <div className="stepper-nav">
+          <button type="button" className="usa-button stepper-nav-button stepper-previous" disabled={step === 0} onClick={() => setStep(step - 1)}>
+            ← Previous
+          </button>
+          <button type="button" className="usa-button stepper-nav-button stepper-next" disabled={step === STEPS.length - 1} onClick={() => setStep(step + 1)}>
+            Next →
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
+
+function StepCard({ title, text, icon, children }: { title: string; text: string; icon: ReactNode; children: ReactNode }) {
+  return (
+    <div className="mission-card">
+      <div className="mission-head">
+        <span className="mission-icon" aria-hidden="true">
+          {icon}
+        </span>
+        <div>
+          <h2>{title}</h2>
+          <p>{text}</p>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+const planeIcon = (
+  <svg viewBox="0 0 24 24">
+    <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+  </svg>
+);
+
+const palletIcon = (
+  <svg viewBox="0 0 24 24">
+    <path d="M3 6h18v4H3V6zm0 6h8v6H3v-6zm10 0h8v6h-8v-6z" />
+  </svg>
+);
+
+const bellyIcon = (
+  <svg viewBox="0 0 24 24">
+    <path d="M4 9h16v9H4V9zm2-4h12v3H6V5z" />
+  </svg>
+);
+
+const weightIcon = (
+  <svg viewBox="0 0 24 24">
+    <path d="M12 3a3.5 3.5 0 0 0-3.5 3.5h7A3.5 3.5 0 0 0 12 3zM5 10h14v9H5v-9z" />
+  </svg>
+);
+
+const fuelIcon = (
+  <svg viewBox="0 0 24 24">
+    <path d="M12 2c3.8 4.8 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 2.2-6.2 6-11z" />
+  </svg>
+);
+
+const crewIcon = (
+  <svg viewBox="0 0 24 24">
+    <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-7 8a7 7 0 0 1 14 0H5z" />
+  </svg>
+);
 
 function HeadField({
   id,
@@ -414,7 +485,7 @@ function RowActions({
           </button>
         ) : null}
       </div>
-      {note ? <div className="section-card worksheet-sheet sheet-frame stepper-note">{note}</div> : null}
+      {note ? <div className="stepper-note">{note}</div> : null}
     </div>
   );
 }
