@@ -438,16 +438,6 @@ body,
   text-transform: none;
 }
 
-.sheet-band {
-  margin: 0;
-  padding: 0.4rem 0.75rem;
-  border-bottom: 1px solid #1b1b1b;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .worksheet-row {
   display: grid;
 }
@@ -590,6 +580,31 @@ body,
 
 .worksheet-row.cols-even-5 {
   grid-template-columns: repeat(5, 1fr);
+}
+
+.worksheet-row.cols-load-head {
+  grid-template-columns: 1.3fr 1.15fr 1.15fr 0.95fr 1.05fr 1.05fr;
+}
+
+.page-of-pages {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.page-of-pages .usa-input {
+  width: 4.25rem;
+  min-width: 0;
+  flex: 1 1 4.25rem;
+  max-width: 6rem;
+  margin-top: 0;
+}
+
+.page-of-pages-of {
+  flex: 0 0 auto;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1e293b;
 }
 
 .worksheet-grid .worksheet-row + .worksheet-row {
@@ -902,6 +917,54 @@ body,
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.inspect-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+.inspect-stack {
+  min-width: 0;
+  border-right: 1px solid #e2e8f0;
+}
+
+.inspect-stack > section + section {
+  border-top: 1px solid #e2e8f0;
+}
+
+.inspect-columns > .inspect-col {
+  min-width: 0;
+}
+
+.inspect-columns .inspect-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 11.5rem;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0.4rem 0.65rem;
+  border: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.inspect-columns .inspect-item:last-child {
+  border-bottom: 0;
+}
+
+.inspect-columns .inspect-item-label {
+  margin: 0;
+  padding: 0;
+  font-size: 0.92rem;
+  line-height: 1.3;
+  color: #1e293b;
+}
+
+.inspect-columns .inspect-item .usa-select {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
 .inspect-choice {
   display: flex;
   gap: 1.25rem;
@@ -1062,7 +1125,28 @@ body,
   .pack-row-item,
   .pack-row-qty,
   .pack-row-cert,
-  .inspect-items,
+  .inspect-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .inspect-stack {
+    display: contents;
+    border-right: none;
+  }
+
+  .inspect-col-11 { order: 1; }
+  .inspect-col-12 { order: 2; }
+  .inspect-col-13 { order: 3; }
+  .inspect-col-14 { order: 4; }
+  .inspect-col-15 { order: 5; }
+
+  .inspect-col {
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .inspect-columns .inspect-item {
+    grid-template-columns: minmax(0, 1fr) minmax(9rem, 11.5rem);
+  }
   .inspect-sign-row,
   .stepper-row-actions {
     grid-template-columns: 1fr;
@@ -1150,6 +1234,7 @@ body,
   .worksheet-row.cols-3,
   .worksheet-row.cols-even-3,
   .worksheet-row.cols-even-5,
+  .worksheet-row.cols-load-head,
   .worksheet-row.cols-4,
   .worksheet-row.cols-5,
   .worksheet-row.pallet-lower,
@@ -1190,6 +1275,12 @@ body,
   align-items: center;
   gap: 0.85rem;
   margin-bottom: 1.25rem;
+}
+
+.packing-step-head {
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .mission-icon {
@@ -1301,21 +1392,19 @@ body,
     grid-template-columns: 1fr;
   }
 }
-.stepper-banner {
+.form-header {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 1rem;
   overflow: hidden;
   padding: 0.95rem 1.25rem;
-  border-radius: 1.15rem;
+  /* border-radius: 1.15rem; gogo */
   background: #010d27;
   color: #fff;
 }
 
-.stepper-banner h1 {
-  position: relative;
-  z-index: 1;
+.form-header h1 {
   margin: 0;
   color: #fff;
   font-size: 1.35rem;
@@ -1323,7 +1412,25 @@ body,
   line-height: 1.2;
 }
 
-.stepper-banner-badge {
+.form-header-title {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.form-header-note {
+  margin: 0;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.form-header-badge {
   position: relative;
   z-index: 1;
   margin-left: auto;
@@ -1333,12 +1440,13 @@ body,
   color: #fff;
   font-size: 0.95rem;
   font-weight: 600;
+  line-height: 1.2;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
-.stepper-banner-plane {
+.form-header-plane {
   position: absolute;
   right: 8.5rem;
   top: 50%;
@@ -1350,7 +1458,7 @@ body,
   pointer-events: none;
 }
 
-.stepper-saved {
+.form-saved {
   margin: 0.4rem 0 0;
   color: #2e8540;
   font-size: 0.85rem;
@@ -1371,9 +1479,10 @@ body,
 }
 
 .stepper-track {
+  --step-count: 7;
   position: relative;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(var(--step-count), minmax(0, 1fr));
   list-style: none;
   margin: 1.25rem 0;
   padding: 0;
@@ -1383,8 +1492,8 @@ body,
   content: "";
   position: absolute;
   top: calc(1.175rem - 1px);
-  left: calc(100% / 14);
-  right: calc(100% / 14);
+  left: calc(100% / (var(--step-count) * 2));
+  right: calc(100% / (var(--step-count) * 2));
   height: 2px;
   background: #d5dde8;
   z-index: 0;
@@ -1467,15 +1576,15 @@ body,
 }
 
 @media (max-width: 48rem) {
-  .stepper-banner {
+  .form-header {
     flex-wrap: wrap;
   }
 
-  .stepper-banner h1 {
+  .form-header h1 {
     font-size: 1.05rem;
   }
 
-  .stepper-banner-plane {
+  .form-header-plane {
     display: none;
   }
 
@@ -1554,6 +1663,55 @@ body,
 .fork-card:focus-within,
 .fork-card:hover {
   outline: 3px solid #2491ff;
+}
+
+.form-banner {
+  margin-bottom: 1rem;
+}
+
+.form-banner .form-saved {
+  margin-bottom: 0;
+}
+
+.soft-form .section-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.soft-form .worksheet-banner,
+.soft-form .inspect-section {
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #0f172a;
+}
+
+.soft-form .worksheet-label {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.soft-form .usa-input,
+.soft-form .usa-textarea,
+.soft-form .usa-select,
+.soft-form select {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.45rem;
+}
+
+.soft-form .section-card,
+.soft-form .section-card * {
+  border-color: #e2e8f0 !important;
+}
+
+.soft-form .sheet-block + .sheet-block {
+  border-top: 1px solid #e2e8f0;
+  box-shadow: none;
 }
 
 @media print {

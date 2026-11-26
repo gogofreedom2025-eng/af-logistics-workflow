@@ -1,9 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { FormBanner } from "../components/FormBanner";
 import { FormSave } from "../components/FormSave";
-import { emptyDangerousCargoRow, formatSavedAt, withDangerousCargo, withSavedForm } from "../data/loadPlan";
+import { FormStepper, StepperFooter } from "../components/FormStepper";
+import { PageOfPages } from "../components/PageOfPages";
+import { boxIcon, clipboardIcon, signIcon, StepHead } from "../components/StepHead";
+import { emptyDangerousCargoRow, withDangerousCargo, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, DangerousCargo, DangerousCargoCert, DangerousCargoRow } from "../types/loadPlan";
+
+const STEPS = ["Shipment details", "Cargo", "Signature"];
 
 export function Form2776() {
   const { id } = useParams();
@@ -38,22 +44,34 @@ function DangerousCargoForm({
     });
   const patchCert = (key: "declaration" | "packed", partial: Partial<DangerousCargoCert>) =>
     patchCargo({ [key]: { ...cargo[key], ...partial } });
+  const [step, setStep] = useState(0);
 
   return (
-    <div className="page-wrap">
-      <p className="page-kicker">DD Form 2776 · Dangerous Cargo Load List</p>
-      <h1>DD Form 2776{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
+    <div className="page-wrap soft-form">
+      <FormBanner
+        title="Dangerous Cargo Load List"
+        form="DD Form 2776"
+        note="(Prescribed by DoD Reg. 4500.9-R)"
+        savedAt={plan.savedAt}
+      />
+      <FormStepper steps={STEPS} step={step} onStep={setStep} />
+
+      {step === 0 ? (
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-        <h2 className="worksheet-banner">
-          Dangerous Cargo Load List
-          <span className="worksheet-unit worksheet-banner-note">(Prescribed by DoD Reg. 4500.9-R)</span>
-        </h2>
-        <div className="worksheet-row">
+        <StepHead title="Shipment details" text="Enter the agency, vessel, and ports." icon={clipboardIcon} />
+        <div className="worksheet-row cols-2">
           <div className="worksheet-cell">
             <span className="worksheet-label">1. Emergency response numbers</span>
             <p className="worksheet-static">DLA - GEN HAZMAT 1-800-851-8061</p>
             <p className="worksheet-static">AOC - AMMO/EXPLOSIVES (703)697-0218/0219</p>
           </div>
+          <PageOfPages
+            id="2776-page"
+            label="2. Page of pages"
+            page={cargo.page}
+            pages={cargo.pages}
+            onChange={(partial) => patchCargo(partial)}
+          />
         </div>
         <div className="worksheet-row cols-2">
           <HeadField label="3a. Agency name" value={cargo.agencyName} onChange={(agencyName) => patchCargo({ agencyName })} />
@@ -117,8 +135,11 @@ function DangerousCargoForm({
           </div>
         </div>
       </div>
+      ) : null}
 
+      {step === 1 ? (
       <div className="section-card worksheet-sheet sheet-frame">
+        <StepHead title="Cargo" text="Enter each dangerous cargo line." icon={boxIcon} />
         {cargo.rows.map((row) => (
           <div className="sheet-block" key={row.id}>
             <div className="cargo-row cargo-row-id">
@@ -173,18 +194,22 @@ function DangerousCargoForm({
           </div>
         ))}
         <div className="actions-row">
-          <button type="button" className="usa-button usa-button--outline" onClick={() => patchCargo({ rows: [...cargo.rows, emptyDangerousCargoRow()] })}>
+          <button type="button" className="usa-button stepper-add" onClick={() => patchCargo({ rows: [...cargo.rows, emptyDangerousCargoRow()] })}>
             Add row
           </button>
           {cargo.rows.length > 1 ? (
-            <button type="button" className="usa-button usa-button--outline" onClick={() => patchCargo({ rows: cargo.rows.slice(0, -1) })}>
+            <button type="button" className="usa-button stepper-remove" onClick={() => patchCargo({ rows: cargo.rows.slice(0, -1) })}>
               Remove row
             </button>
           ) : null}
         </div>
       </div>
+      ) : null}
 
+      {step === 2 ? (
+      <>
       <div className="section-card worksheet-sheet sheet-frame">
+        <StepHead title="Signature" text="Certify the consignment and how it was packed." icon={signIcon} />
         <p className="worksheet-prose">
           23. I hereby declare the contents of this consignment are fully and accurately described above by proper shipping name, are classified, packed, marked/labeled, and are in all respects in proper condition for transport by water according to applicable international and national government regulations.
         </p>
@@ -204,12 +229,17 @@ function DangerousCargoForm({
         </p>
         <CertFields item="24" idPrefix="packed" cert={cargo.packed} onChange={(partial) => patchCert("packed", partial)} />
       </div>
+      </>
+      ) : null}
 
-      <FormSave
-        onSave={() =>
-          saveLoadPlan(withSavedForm({ ...plan, dangerousCargo: cargo }, "DD Form 2776", "dangerous-cargo-load-list"))
-        }
-      />
+      <StepperFooter step={step} count={STEPS.length} onStep={setStep}>
+        <FormSave
+          className="stepper-save"
+          onSave={() =>
+            saveLoadPlan(withSavedForm({ ...plan, dangerousCargo: cargo }, "DD Form 2776", "dangerous-cargo-load-list"))
+          }
+        />
+      </StepperFooter>
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
+import { FormBanner } from "../components/FormBanner";
 import { FormSave } from "../components/FormSave";
-import { cargoWeight, emptyBellyNarrow, emptyBellyWide, emptyRow, formatSavedAt, withSavedForm } from "../data/loadPlan";
+import { FormStepper, StepperFooter } from "../components/FormStepper";
+import { cargoWeight, emptyBellyNarrow, emptyBellyWide, emptyRow, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, BellyNarrowRow, BellyWideRow, LoadSequenceRow } from "../types/loadPlan";
 
@@ -51,39 +53,8 @@ export function Form4080Stepper() {
 
   return (
     <div className="page-wrap">
-      <div className="stepper-banner">
-        <h1>Load/Sequence Breakdown Worksheet</h1>
-        <svg className="stepper-banner-plane" viewBox="0 0 128 48" aria-hidden="true">
-          <path d="M4 28h34l16-14h8l6 14h36c6 0 12 2 16 6l4 4H2l8-6 6-4z" />
-        </svg>
-        <span className="stepper-banner-badge">AF Form 4080</span>
-      </div>
-      {plan.savedAt ? <p className="stepper-saved">Saved {formatSavedAt(plan.savedAt)}</p> : null}
-      <div className="stepper-section no-print">
-        <ol className="stepper-track">
-          {STEPS.map((item, index) => (
-            <li key={item.title}>
-              <button
-                type="button"
-                className={`stepper-step${index < step ? " is-done" : ""}${index === step ? " is-current" : ""}`}
-                aria-current={index === step ? "step" : undefined}
-                onClick={() => setStep(index)}
-              >
-                <span className="stepper-dot">
-                  {index < step ? (
-                    <svg className="stepper-check" viewBox="0 0 16 16" aria-hidden="true">
-                      <path d="M3.2 8.2 6.3 11.3 12.8 4.6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  ) : (
-                    index + 1
-                  )}
-                </span>
-                <span className="stepper-name">{item.short}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      </div>
+      <FormBanner title="Load/Sequence Breakdown Worksheet" form="AF Form 4080" savedAt={plan.savedAt} />
+      <FormStepper steps={STEPS.map((item) => item.short)} step={step} onStep={setStep} />
 
       {step === 0 ? (
         <StepCard title="Mission Details" text="Enter mission and aircraft information." icon={planeIcon}>
@@ -306,27 +277,19 @@ export function Form4080Stepper() {
         </StepCard>
       ) : null}
 
-      <div className="stepper-footer">
+      <StepperFooter step={step} count={STEPS.length} onStep={setStep}>
         <FormSave
           className="stepper-save"
           hint="Complete all required fields to submit."
           submitDisabled={!plan.missionNumber.trim()}
-          onSave={() => saveLoadPlan(withSavedForm(plan, "AF Form 4080 stepper", "4080-stepper"))}
+          onSave={() => saveLoadPlan(withSavedForm(plan, "AF Form 4080", ""))}
           onSubmit={
             step === STEPS.length - 1
-              ? () => saveLoadPlan(withSavedForm(plan, "AF Form 4080 stepper", "4080-stepper"))
+              ? () => saveLoadPlan(withSavedForm(plan, "AF Form 4080", ""))
               : undefined
           }
         />
-        <div className="stepper-nav">
-          <button type="button" className="usa-button stepper-nav-button stepper-previous" disabled={step === 0} onClick={() => setStep(step - 1)}>
-            ← Previous
-          </button>
-          <button type="button" className="usa-button stepper-nav-button stepper-next" disabled={step === STEPS.length - 1} onClick={() => setStep(step + 1)}>
-            Next →
-          </button>
-        </div>
-      </div>
+      </StepperFooter>
     </div>
   );
 }

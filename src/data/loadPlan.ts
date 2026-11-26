@@ -114,6 +114,8 @@ export function emptyDangerousCargoRow(): DangerousCargoRow {
 
 export function sampleDangerousCargo(): DangerousCargo {
   return {
+    page: "1",
+    pages: "1",
     agencyName: "621 CRW",
     agencyAddress: "436th Airlift Wing\nDover AFB\nDover, DE 19902",
     vesselName: "C-17A",
@@ -165,6 +167,8 @@ export function sampleDangerousCargo(): DangerousCargo {
 function dangerousCargoIsBlank(cargo: DangerousCargo | undefined): boolean {
   if (!cargo) return true;
   const text = [
+    cargo.page,
+    cargo.pages,
     cargo.agencyName,
     cargo.agencyAddress,
     cargo.vesselName,
@@ -275,6 +279,8 @@ export function withStoredPlan(plan: AirliftPacket): AirliftPacket {
 
 export function emptyDangerousCargo(): DangerousCargo {
   return {
+    page: "",
+    pages: "",
     agencyName: "",
     agencyAddress: "",
     vesselName: "",
@@ -298,11 +304,11 @@ export function emptyDangerousCargo(): DangerousCargo {
 export function withDangerousCargo(value: DangerousCargo | undefined): DangerousCargo {
   const base = emptyDangerousCargo();
   if (!value) return base;
-  const stored = value as DangerousCargo & { page?: string; pages?: string };
-  const { page: _page, pages: _pages, ...rest } = stored;
   return {
     ...base,
-    ...rest,
+    ...value,
+    page: digitsOnly(value.page ?? ""),
+    pages: digitsOnly(value.pages ?? ""),
     prepared49Cfr: value.prepared49Cfr ?? false,
     preparedImdg: value.preparedImdg ?? false,
     unitKind: value.unitKind ?? "",
@@ -482,6 +488,8 @@ function fillAircraftLoadLine(row?: Partial<AircraftLoadLine>): AircraftLoadLine
 
 export function emptyAircraftLoadPlan(): AircraftLoadPlan {
   return {
+    page: "",
+    pages: "",
     unit: "",
     uic: "",
     movementPlan: "",
@@ -517,11 +525,11 @@ export function emptyAircraftLoadPlan(): AircraftLoadPlan {
 export function withAircraftLoadPlan(value: AircraftLoadPlan | undefined): AircraftLoadPlan {
   const base = emptyAircraftLoadPlan();
   if (!value) return base;
-  const stored = value as AircraftLoadPlan & { page?: string; pages?: string };
-  const { page: _page, pages: _pages, ...rest } = stored;
   return {
     ...base,
-    ...rest,
+    ...value,
+    page: digitsOnly(value.page ?? ""),
+    pages: digitsOnly(value.pages ?? ""),
     lines: value.lines?.length ? value.lines.map((line) => fillAircraftLoadLine(line)) : base.lines,
   };
 }
@@ -680,6 +688,8 @@ export function emptyPackingListRow(): PackingListRow {
 
 export function emptyPackingList(): PackingList {
   return {
+    page: "",
+    pages: "",
     packedBy: "",
     boxCount: "",
     requisitionNo: "",
@@ -695,14 +705,14 @@ export function emptyPackingList(): PackingList {
 export function withPackingList(value: PackingList | undefined): PackingList {
   const base = emptyPackingList();
   if (!value) return base;
-  const stored = value as PackingList & { page?: string; pages?: string };
-  const { page: _page, pages: _pages, ...rest } = stored;
   return {
     ...base,
-    ...rest,
-    boxCount: digitsOnly(rest.boxCount ?? ""),
-    requisitionNo: digitsOnly(rest.requisitionNo ?? ""),
-    orderNo: digitsOnly(rest.orderNo ?? ""),
+    ...value,
+    page: digitsOnly(value.page ?? ""),
+    pages: digitsOnly(value.pages ?? ""),
+    boxCount: digitsOnly(value.boxCount ?? ""),
+    requisitionNo: digitsOnly(value.requisitionNo ?? ""),
+    orderNo: digitsOnly(value.orderNo ?? ""),
     rows: (value.rows?.length ? value.rows : base.rows).map((row) => ({
       ...row,
       boxNo: digitsOnly(row.boxNo ?? ""),

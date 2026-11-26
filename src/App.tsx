@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AppHeader } from "./components/AppHeader";
 import { ClassificationBanner } from "./components/ClassificationBanner";
 import { AircraftLoadPlanForm } from "./pages/AircraftLoadPlan";
@@ -11,11 +11,15 @@ import { Form2133 } from "./pages/Form2133";
 import { Form2768 } from "./pages/Form2768";
 import { Form2775 } from "./pages/Form2775";
 import { Form2776 } from "./pages/Form2776";
-import { Form4080 } from "./pages/Form4080";
 import { Form4080Stepper } from "./pages/Form4080Stepper";
 import { FormCatalog } from "./pages/FormCatalog";
 import { LoadPlanList } from "./pages/LoadPlanList";
 import { SavedData } from "./pages/SavedData";
+
+function Legacy4080Redirect() {
+  const { id } = useParams();
+  return <Navigate to={id ? `/load-plans/${id}` : "/"} replace />;
+}
 
 export default function App() {
   return (
@@ -31,8 +35,8 @@ export default function App() {
           <Route path="/load-plans" element={<LoadPlanList />} />
           <Route path="/saved-data" element={<SavedData />} />
           <Route path="/form-catalog" element={<FormCatalog />} />
-          <Route path="/load-plans/:id" element={<Form4080 />} />
-          <Route path="/load-plans/:id/4080-stepper" element={<Form4080Stepper />} />
+          <Route path="/load-plans/:id" element={<Form4080Stepper />} />
+          <Route path="/load-plans/:id/4080-stepper" element={<Legacy4080Redirect />} />
           <Route path="/load-plans/:id/cargo-manifests" element={<Form1385 />} />
           <Route path="/load-plans/:id/military-shipment-label" element={<Form1387 />} />
           <Route path="/load-plans/:id/special-services-label" element={<Form13872 />} />
