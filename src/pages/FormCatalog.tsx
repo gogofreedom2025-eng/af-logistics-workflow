@@ -2,7 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "../store/Store";
 import { PACKET_STEPS, stepPath } from "../types/loadPlan";
 
-const BUILT_FORMS = PACKET_STEPS.filter((step) => step.built).sort((a, b) => a.title.localeCompare(b.title));
+const BUILT_FORMS = PACKET_STEPS.filter((step) => step.built).sort((a, b) =>
+  a.title.localeCompare(b.title, undefined, { numeric: true }),
+);
 
 export function FormCatalog() {
   const navigate = useNavigate();

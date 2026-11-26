@@ -1,8 +1,14 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { FormBanner } from "../components/FormBanner";
 import { FormSave } from "../components/FormSave";
-import { emptyCargoManifestRow, formatSavedAt, withCargoManifest, withSavedForm } from "../data/loadPlan";
+import { FormStepper, StepperFooter } from "../components/FormStepper";
+import { listIcon, planeIcon, shipIcon, signIcon, StepHead } from "../components/StepHead";
+import { emptyCargoManifestRow, withCargoManifest, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, CargoManifest, CargoManifestRow } from "../types/loadPlan";
+
+const STEPS = ["Air", "Surface", "Cargo", "Signature"];
 
 export function Form1385() {
   const { id } = useParams();
@@ -35,18 +41,21 @@ function CargoManifestForm({
     patch({
       rows: manifest.rows.map((row) => (row.id === rowId ? { ...row, ...partial } : row)),
     });
+  const [step, setStep] = useState(0);
 
   return (
-    <div className="page-wrap">
-      <p className="page-kicker">DD Form 1385, NOV 78 · Cargo Manifest</p>
-      <h1>DD Form 1385{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
+    <div className="page-wrap soft-form">
+      <FormBanner
+        title="Cargo Manifest"
+        form="DD Form 1385"
+        note="Replaces edition of 1 Apr 66 which may be used"
+        savedAt={plan.savedAt}
+      />
+      <FormStepper steps={STEPS} step={step} onStep={setStep} />
 
+      {step === 0 ? (
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-        <h2 className="worksheet-banner">
-          Cargo Manifest
-          <span className="worksheet-unit worksheet-banner-note">Replaces edition of 1 Apr 66 which may be used</span>
-        </h2>
-        <p className="sheet-band">Air</p>
+        <StepHead title="Air" text="Enter the air manifest header." icon={planeIcon} />
         <div className="worksheet-row cols-3">
           <HeadField id="1385-carrier" label="Carrier" value={manifest.carrier} onChange={(carrier) => patch({ carrier })} />
           <HeadField id="1385-ac-no" label="A/C no." value={manifest.acNo} onChange={(acNo) => patch({ acNo })} />
@@ -80,9 +89,11 @@ function CargoManifestForm({
           <HeadField id="1385-manifest-no" label="Manifest ID no." value={manifest.manifestNo} onChange={(manifestNo) => patch({ manifestNo })} />
         </div>
       </div>
+      ) : null}
 
+      {step === 1 ? (
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-        <p className="sheet-band">Surface</p>
+        <StepHead title="Surface" text="Enter the surface manifest header." icon={shipIcon} />
         <div className="worksheet-row cols-4">
           <HeadField id="1385-poe" label="POE" value={manifest.poe} onChange={(poe) => patch({ poe })} />
           <HeadField
@@ -117,8 +128,11 @@ function CargoManifestForm({
           />
         </div>
       </div>
+      ) : null}
 
+      {step === 2 ? (
       <div className="section-card worksheet-sheet sheet-frame">
+        <StepHead title="Cargo" text="Enter each cargo line." icon={listIcon} />
         {manifest.rows.map((row) => (
           <div className="sheet-block worksheet-grid" key={row.id}>
             <div className="worksheet-row cols-4">
@@ -221,28 +235,31 @@ function CargoManifestForm({
         <div className="actions-row">
           <button
             type="button"
-            className="usa-button usa-button--outline"
+            className="usa-button stepper-add"
             onClick={() => patch({ rows: [...manifest.rows, emptyCargoManifestRow()] })}
           >
             Add row
           </button>
           {manifest.rows.length > 1 ? (
-            <button type="button" className="usa-button usa-button--outline" onClick={() => patch({ rows: manifest.rows.slice(0, -1) })}>
+            <button type="button" className="usa-button stepper-remove" onClick={() => patch({ rows: manifest.rows.slice(0, -1) })}>
               Remove row
             </button>
           ) : null}
         </div>
       </div>
+      ) : null}
 
+      {step === 3 ? (
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
+        <StepHead title="Signature" text="Enter the totals and agent signatures." icon={signIcon} />
         <p className="worksheet-prose">Items have been loaded:</p>
         <p className="worksheet-prose">Items have been received except as circled. Noted on reverse side.</p>
-        <div className="worksheet-row cols-3">
+        <div className="worksheet-row cols-3 after-prose">
           <HeadField id="1385-total-pieces" label="Totals pieces" value={manifest.totalPieces} onChange={(totalPieces) => patch({ totalPieces })} />
           <HeadField id="1385-total-weight" label="Totals weight" value={manifest.totalWeight} onChange={(totalWeight) => patch({ totalWeight })} />
           <HeadField id="1385-total-cube" label="Totals cube" value={manifest.totalCube} onChange={(totalCube) => patch({ totalCube })} />
         </div>
-        <div className="worksheet-row cols-4">
+        <div className="worksheet-row cols-2">
           <HeadField
             id="1385-loaded-date"
             label="Date"
@@ -256,6 +273,8 @@ function CargoManifestForm({
             value={manifest.loadingAgent}
             onChange={(loadingAgent) => patch({ loadingAgent })}
           />
+        </div>
+        <div className="worksheet-row cols-2">
           <HeadField
             id="1385-received-date"
             label="Date"
@@ -285,10 +304,15 @@ function CargoManifestForm({
             onChange={(receivingAgent) => patch({ receivingAgent })}
           />
         </div>
-        <p className="worksheet-prose">Page 1 of 1</p>
       </div>
+      ) : null}
 
-      <FormSave onSave={() => saveLoadPlan(withSavedForm({ ...plan, cargoManifest: manifest }, "DD Form 1385", "cargo-manifests"))} />
+      <StepperFooter step={step} count={STEPS.length} onStep={setStep}>
+        <FormSave
+          className="stepper-save"
+          onSave={() => saveLoadPlan(withSavedForm({ ...plan, cargoManifest: manifest }, "DD Form 1385", "cargo-manifests"))}
+        />
+      </StepperFooter>
     </div>
   );
 }

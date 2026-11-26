@@ -1,8 +1,15 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { FormBanner } from "../components/FormBanner";
 import { FormSave } from "../components/FormSave";
-import { digitsOnly, emptyPackingListRow, formatSavedAt, packingRowTotal, withPackingList, withSavedForm } from "../data/loadPlan";
+import { FormStepper, StepperFooter } from "../components/FormStepper";
+import { PageOfPages } from "../components/PageOfPages";
+import { boxIcon, listIcon, signIcon, StepHead } from "../components/StepHead";
+import { digitsOnly, emptyPackingListRow, packingRowTotal, withPackingList, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, PackingList, PackingListRow } from "../types/loadPlan";
+
+const STEPS = ["Packing details", "Contents", "Signature"];
 
 export function Form1750() {
   const { id } = useParams();
@@ -29,6 +36,7 @@ function PackingListForm({
   saveLoadPlan: (plan: AirliftPacket) => void;
 }) {
   const list = withPackingList(plan.packingList);
+  const [step, setStep] = useState(0);
   const patch = (partial: Partial<PackingList>) => saveLoadPlan({ ...plan, packingList: { ...list, ...partial } });
   const updateRow = (rowId: string, partial: Partial<PackingListRow>) =>
     patch({
@@ -36,38 +44,50 @@ function PackingListForm({
     });
 
   return (
-    <div className="page-wrap">
-      <p className="page-kicker">DD Form 1750, SEP 70 · Packing List</p>
-      <h1>DD Form 1750{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
+    <div className="page-wrap soft-form">
+      <FormBanner title="Packing List" form="DD Form 1750" savedAt={plan.savedAt} />
+      <FormStepper steps={STEPS} step={step} onStep={setStep} />
+
+      {step === 0 ? (
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-        <h2 className="worksheet-banner">Packing List</h2>
+        <StepHead title="Packing details" text="Enter who packed the shipment and items 1 through 4." icon={boxIcon} />
         <div className="worksheet-row cols-4">
           <HeadField label="Packed by" value={list.packedBy} onChange={(packedBy) => patch({ packedBy })} />
           <HeadField label="1. No. boxes" numeric value={list.boxCount} onChange={(boxCount) => patch({ boxCount })} />
           <HeadField label="2a. Requisition no." numeric value={list.requisitionNo} onChange={(requisitionNo) => patch({ requisitionNo })} />
           <HeadField label="2b. Order no." numeric value={list.orderNo} onChange={(orderNo) => patch({ orderNo })} />
         </div>
-        <div className="worksheet-row cols-2">
+        <div className="worksheet-row cols-3">
           <HeadField label="3. End item" value={list.endItem} onChange={(endItem) => patch({ endItem })} />
           <HeadField label="4. Date" type="date" value={list.date} onChange={(date) => patch({ date })} />
+          <PageOfPages
+            id="1750-page"
+            label="5. Page of pages"
+            page={list.page}
+            pages={list.pages}
+            onChange={(partial) => patch(partial)}
+          />
         </div>
       </div>
+      ) : null}
 
+      {step === 1 ? (
       <div className="section-card worksheet-sheet sheet-frame">
+        <StepHead title="Contents" text="Enter each box and the quantities required." icon={listIcon} />
         {list.rows.map((row) => (
           <div className="sheet-block" key={row.id}>
             <div className="cargo-row pack-row-item">
-              <PackField id={`${row.id}-box`} label="5a. Box no." numeric value={row.boxNo} onChange={(boxNo) => updateRow(row.id, { boxNo })} />
+              <PackField id={`${row.id}-box`} label="(a) Box no." numeric value={row.boxNo} onChange={(boxNo) => updateRow(row.id, { boxNo })} />
               <PackField
                 id={`${row.id}-contents`}
-                label="5b. Contents"
+                label="(b) Contents"
                 note="(stock number and nomenclature)"
                 value={row.contents}
                 onChange={(contents) => updateRow(row.id, { contents })}
               />
               <PackField
                 id={`${row.id}-unit`}
-                label="5c. Unit of issue"
+                label="(c) Unit of issue"
                 value={row.unitOfIssue}
                 onChange={(unitOfIssue) => updateRow(row.id, { unitOfIssue })}
               />
@@ -76,34 +96,36 @@ function PackingListForm({
             <div className="cargo-row pack-row-qty">
               <PackField
                 id={`${row.id}-initial`}
-                label="5d. Initial operation"
+                label="(d) Initial operation"
                 value={row.initial}
                 onChange={(initial) => updateRow(row.id, { initial, total: packingRowTotal(initial, row.spares) })}
               />
               <PackField
                 id={`${row.id}-spares`}
-                label="5e. Running spares"
+                label="(e) Running spares"
                 value={row.spares}
                 onChange={(spares) => updateRow(row.id, { spares, total: packingRowTotal(row.initial, spares) })}
               />
-              <PackField id={`${row.id}-total`} label="5f. Total" value={row.total} readOnly />
+              <PackField id={`${row.id}-total`} label="(f) Total" value={row.total} readOnly />
             </div>
           </div>
         ))}
         <div className="actions-row">
-          <button type="button" className="usa-button usa-button--outline" onClick={() => patch({ rows: [...list.rows, emptyPackingListRow()] })}>
+          <button type="button" className="usa-button stepper-add" onClick={() => patch({ rows: [...list.rows, emptyPackingListRow()] })}>
             Add row
           </button>
           {list.rows.length > 1 ? (
-            <button type="button" className="usa-button usa-button--outline" onClick={() => patch({ rows: list.rows.slice(0, -1) })}>
+            <button type="button" className="usa-button stepper-remove" onClick={() => patch({ rows: list.rows.slice(0, -1) })}>
               Remove row
             </button>
           ) : null}
         </div>
       </div>
+      ) : null}
 
+      {step === 2 ? (
       <div className="section-card worksheet-sheet sheet-frame">
-        <p className="worksheet-prose">This certifies that the items listed hereon are within the specified boxes.</p>
+        <StepHead title="Signature" text="Certify the items and sign the packing list." icon={signIcon} />
         <div className="sheet-block">
           <div className="cargo-row pack-row-cert">
             <PackField id="1750-name" label="6. Typed name and title" value={list.typedName} onChange={(typedName) => patch({ typedName })} />
@@ -111,6 +133,7 @@ function PackingListForm({
           </div>
         </div>
       </div>
+      ) : null}
 
       <div className="section-card worksheet-sheet sheet-frame">
         <h2 className="worksheet-banner">Notes to consignee</h2>
@@ -180,7 +203,12 @@ function PackingListForm({
         </div>
       </div>
 
-      <FormSave onSave={() => saveLoadPlan(withSavedForm({ ...plan, packingList: list }, "DD Form 1750", "packing-list"))} />
+      <StepperFooter step={step} count={STEPS.length} onStep={setStep}>
+        <FormSave
+          className="stepper-save"
+          onSave={() => saveLoadPlan(withSavedForm({ ...plan, packingList: list }, "DD Form 1750", "packing-list"))}
+        />
+      </StepperFooter>
     </div>
   );
 }

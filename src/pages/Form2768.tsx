@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
+import { FormBanner } from "../components/FormBanner";
 import { FormSave } from "../components/FormSave";
-import { emptyAirRequestPassenger, formatSavedAt, withAirRequest, withSavedForm } from "../data/loadPlan";
+import { emptyAirRequestPassenger, withAirRequest, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type {
   AirliftPacket,
@@ -61,16 +62,14 @@ function AirRequestForm({
   const patchPassengers = (key: "passengers" | "nonDvPassengers", rows: AirRequestPassenger[]) => patch({ [key]: rows });
 
   return (
-    <div className="page-wrap">
-      <p className="page-kicker">DD Form 2768, MAR 1998 · Military Air Passenger/Cargo Request</p>
-      <h1>DD Form 2768{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
+    <div className="page-wrap soft-form">
+      <FormBanner title="Military Air Passenger/Cargo Request" form="DD Form 2768" savedAt={plan.savedAt} />
 
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-        <h2 className="worksheet-banner">
-          Military Air Passenger/Cargo Request
+        <p className="worksheet-banner">
           <span className="worksheet-unit worksheet-banner-note">Prescribed by DoDD 4500.56</span>
           <span className="worksheet-unit worksheet-banner-note">Keep this data on file for two years after submission date.</span>
-        </h2>
+        </p>
 
         <div className="worksheet-row">
           <div className="worksheet-cell travel-priority">
@@ -288,11 +287,11 @@ function PassengerRows({
       {actions ? (
         <div className="worksheet-row">
           <div className="worksheet-cell actions-row">
-            <button type="button" className="usa-button usa-button--outline" onClick={() => onChange([...rows, emptyAirRequestPassenger()])}>
+            <button type="button" className="usa-button stepper-add" onClick={() => onChange([...rows, emptyAirRequestPassenger()])}>
               Add passenger
             </button>
             {rows.length > 1 ? (
-              <button type="button" className="usa-button usa-button--outline" onClick={() => onChange(rows.slice(0, -1))}>
+              <button type="button" className="usa-button stepper-remove" onClick={() => onChange(rows.slice(0, -1))}>
                 Remove passenger
               </button>
             ) : null}

@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
+import { FormBanner } from "../components/FormBanner";
 import { FormSave } from "../components/FormSave";
-import { formatSavedAt, withSavedForm, withShipmentLabel } from "../data/loadPlan";
+import { withSavedForm, withShipmentLabel } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, ShipmentLabel } from "../types/loadPlan";
 
@@ -32,12 +33,10 @@ function ShipmentLabelForm({
   const patch = (partial: Partial<ShipmentLabel>) => saveLoadPlan({ ...plan, shipmentLabel: { ...label, ...partial } });
 
   return (
-    <div className="page-wrap">
-      <p className="page-kicker">DD Form 1387, JUL 1999 · Military Shipment Label</p>
-      <h1>DD Form 1387{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
+    <div className="page-wrap soft-form">
+      <FormBanner title="Military Shipment Label" form="DD Form 1387" savedAt={plan.savedAt} />
 
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-        <h2 className="worksheet-banner">Military Shipment Label</h2>
         <div className="worksheet-row cols-quarter-end">
           <HeadField id="1387-tcn" label="1. Transportation control number" value={label.tcn} onChange={(tcn) => patch({ tcn })} multiline />
           <HeadField id="1387-postage" label="2. Postage data" value={label.postageData} onChange={(postageData) => patch({ postageData })} multiline />
@@ -65,7 +64,7 @@ function ShipmentLabelForm({
           />
           <div className="label-side">
             <div className="worksheet-row cols-2">
-              <HeadField id="1387-weight" label="10. Wt." note="(this piece)" value={label.weight} onChange={(weight) => patch({ weight })} />
+              <HeadField id="1387-weight" label="10. WT." note="(this piece)" value={label.weight} onChange={(weight) => patch({ weight })} />
               <HeadField id="1387-rdd" label="11. RDD" value={label.rdd} onChange={(rdd) => patch({ rdd })} />
             </div>
             <div className="worksheet-row cols-2">

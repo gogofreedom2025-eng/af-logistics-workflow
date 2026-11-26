@@ -1,8 +1,14 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { FormBanner } from "../components/FormBanner";
 import { FormSave } from "../components/FormSave";
-import { emptyInspectionColumn, formatSavedAt, withInspection, withSavedForm } from "../data/loadPlan";
+import { FormStepper, StepperFooter } from "../components/FormStepper";
+import { clipboardIcon, listIcon, signIcon, StepHead } from "../components/StepHead";
+import { emptyInspectionColumn, withInspection, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, InspectionColumn, InspectionMark, JointInspection } from "../types/loadPlan";
+
+const STEPS = ["Inspection details", "Checklist", "Signature"];
 
 type ChecklistLine = { id: string; label: string; note?: string; section?: boolean; ownRow?: string };
 
@@ -49,35 +55,56 @@ const LINES: ChecklistLine[] = [
   { id: "15e", label: "e. Accompanying Load", note: "(w/in Rated Capacity and Secured)" },
 ];
 
-function itemRows(items: ChecklistLine[]): ChecklistLine[][] {
-  const rows: ChecklistLine[][] = [];
-  let current: ChecklistLine[] = [];
-  const flush = () => {
-    if (current.length) rows.push(current);
-    current = [];
-  };
-  for (const line of items) {
-    if (line.ownRow) {
-      flush();
-      const last = rows[rows.length - 1];
-      if (last?.[0]?.ownRow === line.ownRow) last.push(line);
-      else rows.push([line]);
-      continue;
-    }
-    current.push(line);
-    if (current.length === 3) flush();
-  }
-  flush();
-  return rows;
-}
+type ChecklistGroup = { section: ChecklistLine; items: ChecklistLine[] };
 
-function checklistGroups(): { section: ChecklistLine; items: ChecklistLine[] }[] {
+function checklistGroups(): ChecklistGroup[] {
   const groups: { section: ChecklistLine; items: ChecklistLine[] }[] = [];
   for (const line of LINES) {
     if (line.section) groups.push({ section: line, items: [] });
     else groups[groups.length - 1]?.items.push(line);
   }
   return groups;
+}
+
+function ChecklistSection({
+  group,
+  column,
+  index,
+  onMark,
+}: {
+  group: ChecklistGroup;
+  column: InspectionColumn;
+  index: number;
+  onMark: (lineId: string, mark: InspectionMark) => void;
+}) {
+  return (
+    <section className={`inspect-col inspect-col-${group.section.id}`}>
+      <h3 className="inspect-section">
+        {group.section.label}
+        {group.section.note ? <span className="worksheet-unit"> {group.section.note}</span> : null}
+      </h3>
+      {group.items.map((line) => (
+        <div className="inspect-item" key={line.id}>
+          <div className="inspect-item-label">
+            {line.label}
+            {line.note ? <span className="worksheet-unit"> {line.note}</span> : null}
+          </div>
+          <select
+            className="usa-select"
+            aria-label={`${line.label} for ${column.identity || `increment ${index + 1}`}`}
+            value={column.marks[line.id] ?? ""}
+            onChange={(event) => onMark(line.id, event.target.value as InspectionMark)}
+          >
+            <option value=""> </option>
+            <option value="sat">Satisfactory</option>
+            <option value="unsat">Unsatisfactory</option>
+            <option value="corrected">Corrected</option>
+            <option value="na">Not applicable</option>
+          </select>
+        </div>
+      ))}
+    </section>
+  );
 }
 
 export function Form2133() {
@@ -116,18 +143,26 @@ function InspectionForm({
     if (!column) return;
     updateColumn(columnId, { marks: { ...column.marks, [lineId]: mark } });
   };
+  const [step, setStep] = useState(0);
+  const groups = checklistGroups();
+  const section = (id: string) => {
+    const group = groups.find((item) => item.section.id === id);
+    if (!group) throw new Error(`Missing checklist section ${id}`);
+    return group;
+  };
 
   return (
-    <div className="page-wrap">
-      <p className="page-kicker">DD Form 2133 · Joint Airlift Inspection Record/Checklist</p>
-      <h1>DD Form 2133{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
+    <div className="page-wrap soft-form">
+      <FormBanner
+        title="Joint Airlift Inspection Record/Checklist"
+        form="DD Form 2133"
+        note="(Reference DTR Part III Appendix O For Form Completion)"
+        savedAt={plan.savedAt}
+      />
+      <FormStepper steps={STEPS} step={step} onStep={setStep} />
+      {step === 0 ? (
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-        <h2 className="worksheet-banner">
-          Joint Airlift Inspection Record/Checklist
-          <span className="worksheet-unit worksheet-banner-note">
-            (Reference DTR Part III Appendix O For Form Completion)
-          </span>
-        </h2>
+        <StepHead title="Inspection details" text="Enter the deploying force, airfield, and mission." icon={clipboardIcon} />
         <div className="worksheet-row cols-3">
           <HeadField label="1. Deploying force" value={form.deployingForce} onChange={(deployingForce) => patch({ deployingForce })} />
           <HeadField label="2. Departure airfield" value={form.departureAirfield} onChange={(departureAirfield) => patch({ departureAirfield })} />
@@ -156,66 +191,48 @@ function InspectionForm({
           </div>
         </div>
       </div>
+      ) : null}
 
-      <div className="section-card worksheet-sheet sheet-frame">
-        <div className="inspect-increments">
-          {form.columns.map((column, index) => (
-            <div className="inspect-increment" key={column.id}>
-              <label className="worksheet-label" htmlFor={`${column.id}-identity`}>
-                10. Increment/serial/bumper number and type/TCN
-              </label>
-              <input
-                id={`${column.id}-identity`}
-                className="usa-input"
-                value={column.identity}
-                aria-label={`Increment ${index + 1}`}
-                onChange={(event) => updateColumn(column.id, { identity: event.target.value })}
-              />
-            </div>
-          ))}
-        </div>
-        {checklistGroups().map((group) => (
-          <section key={group.section.id}>
-            <h3 className="inspect-section">
-              {group.section.label}
-              {group.section.note ? <span className="worksheet-unit"> {group.section.note}</span> : null}
-            </h3>
-            {itemRows(group.items).map((row) => (
-              <div className="inspect-items" key={row.map((line) => line.id).join("-")}>
-                {row.map((line) => (
-                  <div className="inspect-item" key={line.id}>
-                    <div className="inspect-item-label">
-                      {line.label}
-                      {line.note ? <span className="worksheet-unit"> {line.note}</span> : null}
-                    </div>
-                    {form.columns.map((column, index) => (
-                      <select
-                        key={column.id}
-                        className="usa-select"
-                        aria-label={`${line.label} for ${column.identity || `increment ${index + 1}`}`}
-                        value={column.marks[line.id] ?? ""}
-                        onChange={(event) => setMark(column.id, line.id, event.target.value as InspectionMark)}
-                      >
-                        <option value=""> </option>
-                        <option value="sat">Satisfactory</option>
-                        <option value="unsat">Unsatisfactory</option>
-                        <option value="corrected">Corrected</option>
-                        <option value="na">Not applicable</option>
-                      </select>
-                    ))}
-                  </div>
-                ))}
-                {Array.from({ length: (3 - (row.length % 3)) % 3 }, (_, index) => (
-                  <div className="inspect-item inspect-item-pad" key={`${row[0].id}-pad-${index}`} />
-                ))}
+      {step === 1 ? (
+      <>
+        {form.columns.map((column, index) => (
+          <div className="section-card worksheet-sheet sheet-frame" key={column.id}>
+            {index === 0 ? (
+              <StepHead title="Checklist" text="Mark each item for this increment." icon={listIcon} />
+            ) : null}
+            <div className="worksheet-grid">
+              <div className="worksheet-row">
+                <div className="worksheet-cell">
+                  <label className="worksheet-label" htmlFor={`${column.id}-identity`}>
+                    10. Increment/serial/bumper number and type/TCN
+                  </label>
+                  <input
+                    id={`${column.id}-identity`}
+                    className="usa-input"
+                    value={column.identity}
+                    aria-label={`Increment ${index + 1}`}
+                    onChange={(event) => updateColumn(column.id, { identity: event.target.value })}
+                  />
+                </div>
               </div>
-            ))}
-          </section>
+            </div>
+            <div className="inspect-columns">
+              <div className="inspect-stack">
+                <ChecklistSection group={section("11")} column={column} index={index} onMark={(lineId, mark) => setMark(column.id, lineId, mark)} />
+                <ChecklistSection group={section("14")} column={column} index={index} onMark={(lineId, mark) => setMark(column.id, lineId, mark)} />
+              </div>
+              <div className="inspect-stack">
+                <ChecklistSection group={section("12")} column={column} index={index} onMark={(lineId, mark) => setMark(column.id, lineId, mark)} />
+                <ChecklistSection group={section("15")} column={column} index={index} onMark={(lineId, mark) => setMark(column.id, lineId, mark)} />
+              </div>
+              <ChecklistSection group={section("13")} column={column} index={index} onMark={(lineId, mark) => setMark(column.id, lineId, mark)} />
+            </div>
+          </div>
         ))}
         <div className="actions-row">
           <button
             type="button"
-            className="usa-button usa-button--outline"
+            className="usa-button stepper-add"
             onClick={() => patch({ columns: [...form.columns, emptyInspectionColumn()] })}
           >
             Add increment
@@ -223,16 +240,19 @@ function InspectionForm({
           {form.columns.length > 1 ? (
             <button
               type="button"
-              className="usa-button usa-button--outline"
+              className="usa-button stepper-remove"
               onClick={() => patch({ columns: form.columns.slice(0, -1) })}
             >
               Remove increment
             </button>
           ) : null}
         </div>
-      </div>
+      </>
+      ) : null}
 
+      {step === 2 ? (
       <div className="section-card worksheet-sheet sheet-frame">
+        <StepHead title="Signature" text="Certify the inspection and add any notes." icon={signIcon} />
         <div className="sheet-block">
           <div className="inspect-sign-row">
             <div>
@@ -277,8 +297,14 @@ function InspectionForm({
           </div>
         </div>
       </div>
+      ) : null}
 
-      <FormSave onSave={() => saveLoadPlan(withSavedForm({ ...plan, inspection: form }, "DD Form 2133", "joint-airlift-inspection"))} />
+      <StepperFooter step={step} count={STEPS.length} onStep={setStep}>
+        <FormSave
+          className="stepper-save"
+          onSave={() => saveLoadPlan(withSavedForm({ ...plan, inspection: form }, "DD Form 2133", "joint-airlift-inspection"))}
+        />
+      </StepperFooter>
     </div>
   );
 }

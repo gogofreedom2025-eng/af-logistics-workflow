@@ -1,8 +1,13 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { C130LoadDiagram } from "../components/C130LoadDiagram";
 import { C17LoadDiagram } from "../components/C17LoadDiagram";
+import { FormBanner } from "../components/FormBanner";
 import { FormSave } from "../components/FormSave";
-import { emptyAircraftLoadLine, formatSavedAt, withAircraftLoadPlan, withSavedForm } from "../data/loadPlan";
+import { FormStepper, StepperFooter } from "../components/FormStepper";
+import { PageOfPages } from "../components/PageOfPages";
+import { palletIcon, planeIcon, signIcon, StepHead, weightIcon } from "../components/StepHead";
+import { emptyAircraftLoadLine, withAircraftLoadPlan, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AircraftLoadLine, AircraftLoadPlan, AirliftPacket } from "../types/loadPlan";
 
@@ -12,7 +17,6 @@ const CONFIG = {
   c17: {
     field: "c17LoadPlan" as const,
     formNumber: "DD Form 2130-13",
-    edition: "JUN 2026",
     title: "C-17 Load Plan",
     slug: "c17-load-plan",
     momentNote: "(10,000)",
@@ -23,7 +27,6 @@ const CONFIG = {
   c130: {
     field: "c130LoadPlan" as const,
     formNumber: "DD Form 2130-2",
-    edition: "JUN 2016",
     title: "C-130 E/H/J Load Plan",
     slug: "c130-load-plan",
     momentNote: "(1,000)",
@@ -32,6 +35,8 @@ const CONFIG = {
     Diagram: C130LoadDiagram,
   },
 };
+
+const LOAD_PLAN_STEPS = ["Load details", "Loadout", "Weights", "Signature"];
 
 const REMARKS = [
   "1. Off center",
@@ -84,32 +89,33 @@ function LoadPlanSheet({
 }) {
   const form = withAircraftLoadPlan(plan[config.field]);
   const Diagram = config.Diagram;
+  const [step, setStep] = useState(0);
   const patch = (partial: Partial<AircraftLoadPlan>) =>
     saveLoadPlan({ ...plan, [config.field]: { ...form, ...partial } });
   const updateLine = (lineId: string, partial: Partial<AircraftLoadLine>) =>
     patch({ lines: form.lines.map((line) => (line.id === lineId ? { ...line, ...partial } : line)) });
 
   return (
-    <div className="page-wrap">
-      <p className="page-kicker">
-        {config.formNumber}, {config.edition} · {config.title}
-      </p>
-      <h1>
-        {config.formNumber}
-        {plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}
-      </h1>
+    <div className="page-wrap soft-form">
+      <FormBanner title={config.title} form={config.formNumber} savedAt={plan.savedAt} />
+      <FormStepper steps={LOAD_PLAN_STEPS} step={step} onStep={setStep} />
 
+      {step === 0 ? (
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-        <h2 className="worksheet-banner">
-          {config.title}
-          <span className="worksheet-unit worksheet-banner-note">{config.edition}</span>
-        </h2>
-        <div className="worksheet-row cols-even-5">
+        <StepHead title="Load details" text="Enter the unit, mission, and airfields." icon={planeIcon} />
+        <div className="worksheet-row cols-load-head">
           <HeadField id={`${config.slug}-unit`} label="1. Unit being airlifted" note="(Name or number)" value={form.unit} onChange={(unit) => patch({ unit })} />
           <HeadField id={`${config.slug}-uic`} label="2. Unit identification code" value={form.uic} onChange={(uic) => patch({ uic })} />
           <HeadField id={`${config.slug}-movement`} label="3. Type movement plan" value={form.movementPlan} onChange={(movementPlan) => patch({ movementPlan })} />
           <HeadField id={`${config.slug}-movement-date`} label="4. Movement date" type="date" value={form.movementDate} onChange={(movementDate) => patch({ movementDate })} />
           <HeadField id={`${config.slug}-load-no`} label="5. Unit aircraft load no." value={form.loadNumber} onChange={(loadNumber) => patch({ loadNumber })} />
+          <PageOfPages
+            id={`${config.slug}-page`}
+            label="Page of pages"
+            page={form.page}
+            pages={form.pages}
+            onChange={(partial) => patch(partial)}
+          />
         </div>
         <div className="worksheet-row cols-even-5">
           <HeadField id={`${config.slug}-mission`} label="6. Mission number" value={form.missionNumber} onChange={(missionNumber) => patch({ missionNumber })} />
@@ -119,8 +125,11 @@ function LoadPlanSheet({
           <HeadField id={`${config.slug}-destination`} label="10. Destination airfield" value={form.destinationAirfield} onChange={(destinationAirfield) => patch({ destinationAirfield })} />
         </div>
       </div>
+      ) : null}
 
+      {step === 1 ? (
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
+        <StepHead title="Loadout" text="Enter the actual loadout, dimensions, and remarks." icon={palletIcon} />
         <div className="worksheet-row">
           <div className="worksheet-cell">
             <span className="worksheet-label">11. Actual loadout</span>
@@ -185,11 +194,11 @@ function LoadPlanSheet({
         ))}
         <div className="worksheet-row">
           <div className="worksheet-cell actions-row">
-            <button type="button" className="usa-button usa-button--outline" onClick={() => patch({ lines: [...form.lines, emptyAircraftLoadLine()] })}>
+            <button type="button" className="usa-button stepper-add" onClick={() => patch({ lines: [...form.lines, emptyAircraftLoadLine()] })}>
               Add row
             </button>
             {form.lines.length > 1 ? (
-              <button type="button" className="usa-button usa-button--outline" onClick={() => patch({ lines: form.lines.slice(0, -1) })}>
+              <button type="button" className="usa-button stepper-remove" onClick={() => patch({ lines: form.lines.slice(0, -1) })}>
                 Remove row
               </button>
             ) : null}
@@ -208,8 +217,11 @@ function LoadPlanSheet({
           ))}
         </div>
       </div>
+      ) : null}
 
+      {step === 2 ? (
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
+        <StepHead title="Weights" text="Enter passenger seats, weight, and moment totals." icon={weightIcon} />
         <div className="load-summary">
           <div className="load-seats">
             <div className="worksheet-row">
@@ -257,8 +269,11 @@ function LoadPlanSheet({
           </div>
         </div>
       </div>
+      ) : null}
 
+      {step === 3 ? (
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
+        <StepHead title="Signature" text="Certify who planned the load and who approved it." icon={signIcon} />
         <div className="worksheet-row cols-2">
           <HeadField id={`${config.slug}-planned-date`} label="15a. Load planned by date certified" type="date" value={form.plannedDate} onChange={(plannedDate) => patch({ plannedDate })} />
           <HeadField id={`${config.slug}-planned-name`} label="Typed/printed name, grade, organization of loadplanner" value={form.plannedName} onChange={(plannedName) => patch({ plannedName })} />
@@ -274,12 +289,14 @@ function LoadPlanSheet({
           <HeadField id={`${config.slug}-approved-signature`} label="Signature" value={form.approvedSignature} onChange={(approvedSignature) => patch({ approvedSignature })} />
         </div>
       </div>
+      ) : null}
 
-      <FormSave
-        onSave={() =>
-          saveLoadPlan(withSavedForm({ ...plan, [config.field]: form }, config.formNumber, config.slug))
-        }
-      />
+      <StepperFooter step={step} count={LOAD_PLAN_STEPS.length} onStep={setStep}>
+        <FormSave
+          className="stepper-save"
+          onSave={() => saveLoadPlan(withSavedForm({ ...plan, [config.field]: form }, config.formNumber, config.slug))}
+        />
+      </StepperFooter>
     </div>
   );
 }

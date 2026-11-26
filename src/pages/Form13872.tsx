@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
+import { FormBanner } from "../components/FormBanner";
 import { FormSave } from "../components/FormSave";
-import { formatSavedAt, withSavedForm, withSpecialHandling } from "../data/loadPlan";
+import { withSavedForm, withSpecialHandling } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, SpecialHandling } from "../types/loadPlan";
 
@@ -32,12 +33,10 @@ function SpecialHandlingForm({
   const patch = (partial: Partial<SpecialHandling>) => saveLoadPlan({ ...plan, specialHandling: { ...form, ...partial } });
 
   return (
-    <div className="page-wrap">
-      <p className="page-kicker">DD Form 1387-2, NOV 2004 · Special Handling Data/Certification</p>
-      <h1>DD Form 1387-2{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
+    <div className="page-wrap soft-form">
+      <FormBanner title="Special Handling Data/Certification" form="DD Form 1387-2" savedAt={plan.savedAt} />
 
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-        <h2 className="worksheet-banner">Special Handling Data/Certification</h2>
         <div className="worksheet-row label-top">
           <HeadField
             id="13872-nomenclature"

@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
+import { FormBanner } from "../components/FormBanner";
 import { FormSave } from "../components/FormSave";
-import { formatSavedAt, withPalletIdentifier, withSavedForm } from "../data/loadPlan";
+import { withPalletIdentifier, withSavedForm } from "../data/loadPlan";
 import { useStore } from "../store/Store";
 import type { AirliftPacket, PalletIdentifier } from "../types/loadPlan";
 
@@ -33,15 +34,15 @@ function PalletIdentifierForm({
     saveLoadPlan({ ...plan, palletIdentifier: { ...card, ...partial } });
 
   return (
-    <div className="page-wrap">
-      <p className="page-kicker">DD Form 2775, SEP 1998 · Pallet Identifier</p>
-      <h1>DD Form 2775{plan.savedAt ? ` · ${formatSavedAt(plan.savedAt)}` : ""}</h1>
+    <div className="page-wrap soft-form">
+      <FormBanner
+        title="Pallet Identifier"
+        form="DD Form 2775"
+        note="Prescribed by DTR 4500.9-R"
+        savedAt={plan.savedAt}
+      />
 
       <div className="section-card worksheet-sheet sheet-frame worksheet-grid">
-        <h2 className="worksheet-banner">
-          Pallet Identifier
-          <span className="worksheet-unit worksheet-banner-note">Prescribed by DTR 4500.9-R</span>
-        </h2>
         <div className="worksheet-row cols-2">
           <HeadField
             id="2775-pallet-id"
